@@ -53,6 +53,7 @@ function Login() {
       .post("http://localhost:5000/login", data)
       .then((response) => {
         console.log(response);
+        window.location = "/chat";
         setFlag(false);
       })
       .catch((error) => {

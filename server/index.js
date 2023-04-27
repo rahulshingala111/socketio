@@ -2,11 +2,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
-
+const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const cors = require("cors");
+app.use(cors());
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 //Schema
 const User = require("./schema/User");
-
-const app = express();
 
 //header origin
 app.use((req, res, next) => {
@@ -40,6 +49,7 @@ db.once("open", () => {
 });
 //#endregion
 
+//#region ====home====
 app.get("/", (req, res) => {
   console.log("inside home");
   res.sendStatus(200);
@@ -120,7 +130,35 @@ app.post("/login", chechEmailPassword, (req, res) => {
 //   }
 // };
 
-app.get("/chat", isAuthenticated, (req, res) => {});
+//#endregion
+
+app.get("/chat", (req, res) => {});
+
+io.on("connection", (socket) => {
+  console.log("user connected - " + socket.id);
+
+  socket.on("chat message", (msg) => {
+    console.log("message :" + msg);
+  });
+
+  socket.on("join_room", (room) => {
+    socket.join(room);
+    console.log(`user ${socket.id} joined ${room} room`);
+  });
+
+  socket.on("send_message", (messageData) => {
+    console.log(messageData);
+    socket.to(messageData.room).emit("recieve_message", messageData);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected", socket.id);
+  });
+});
+
+server.listen(3001, () => {
+  console.log("listening on " + 3001);
+});
 
 const port = 5000;
 app.listen(port, () => {

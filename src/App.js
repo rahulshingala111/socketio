@@ -14,6 +14,8 @@ const Register = React.lazy(() => import('./pages/register/Register'))
 const Page404 = React.lazy(() => import('./pages/error_page/Page404'))
 const Page500 = React.lazy(() => import('./pages/error_page/Page500'))
 
+const Chat = React.lazy(() => import('./pages/chat/Chat'))
+
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +25,8 @@ function App() {
 
         <Route exact path="/login" name="Login Page" element={<Login />} />
         <Route exact path="/register" name="Register Page" element={<Register />} />
+
+        <Route exact path="/chat" name="Register Page" element={<Chat />} />
 
         <Route path="/*" name="Page 404" element={<Page404 />} />
         <Route path="/500" name="Page 500" element={<Page500 />} />
