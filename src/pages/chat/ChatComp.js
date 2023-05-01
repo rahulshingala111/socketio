@@ -4,6 +4,7 @@ import ScrollToBottom from "react-scroll-to-bottom";
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
+  const [file, setFile] = useState();
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -12,6 +13,7 @@ function ChatComp({ socket, username, room }) {
         room,
         username,
         currentMessage,
+        file,
         time:
           new Date(Date.now()).getHours() +
           ":" +
@@ -19,10 +21,27 @@ function ChatComp({ socket, username, room }) {
       };
       await socket.emit("send_message", messageData);
       setMessageList((list) => [...list, messageData]);
-      setCurrentMessage('')
+      setCurrentMessage("");
     } else {
       console.log("enter your message first..!!!");
     }
+  };
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+  const handleFile = async (e) => {
+    e.preventDefault();
+    const abc = await convertToBase64(e.target.files[0]);
+    setFile(abc);
   };
 
   useEffect(() => {
@@ -38,15 +57,23 @@ function ChatComp({ socket, username, room }) {
       </div>
       <div className="chat-body">
         <ScrollToBottom className="message-container">
-          {messageList.map((messagecontent) => {
+          {messageList.map((messagecontent, index) => {
             return (
               <div
+                key={index}
                 className="message"
                 id={username === messagecontent.username ? "other" : "you"}
               >
                 <div>
                   <div className="message-content">
-                    <p>{messagecontent.currentMessage}</p>
+                    <p>
+                      {messagecontent.currentMessage} &nbsp;
+                      {messagecontent.file ? (
+                        <a href="#" download={messagecontent.file}>
+                          attachment
+                        </a>
+                      ) : null}
+                    </p>
                   </div>
                   <div className="message-meta">
                     <p id="time">{messagecontent.time}</p>
@@ -59,16 +86,26 @@ function ChatComp({ socket, username, room }) {
         </ScrollToBottom>
       </div>
       <div className="chat-footer">
-        <input
-          type="text"
-          value={currentMessage}
-          placeholder="Send Message...."
-          onChange={(e) => {
-            e.preventDefault();
-            setCurrentMessage(e.target.value);
-          }}
-        />
-        <button onClick={handleSendMessage}>&#9658;</button>
+        <form>
+          <input
+            type="text"
+            value={currentMessage}
+            placeholder="Send Message...."
+            onChange={(e) => {
+              e.preventDefault();
+              setCurrentMessage(e.target.value);
+            }}
+          />
+          <button type="submit" onClick={handleSendMessage}>
+            send
+          </button>
+          <input
+            type="file"
+            id="myfile"
+            name="file"
+            onChange={handleFile}
+          ></input>
+        </form>
       </div>
     </div>
   );
