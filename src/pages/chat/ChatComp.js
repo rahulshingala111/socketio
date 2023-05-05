@@ -1,10 +1,24 @@
+/* eslint-disable */
 import { useEffect, useState } from "react";
 import "./ChatCss.css";
 import ScrollToBottom from "react-scroll-to-bottom";
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-  const [file, setFile] = useState();
+  const [chunk, setChunk] = useState();
+  const [downloadedFile, setDownloadedFile] = useState([]);
+  let newfile = [];
+  useEffect(() => {
+    socket.on("recieve_message", (data) => {
+      newfile.buffer = [];
+
+      newfile.buffer.push(data.buffer);
+      console.log(newfile.buffer);
+      download(new Blob(newfile.buffer), "any");
+      setDownloadedFile(newfile.buffer);
+      new setMessageList((list) => [...list, data]);
+    });
+  }, [socket]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -13,7 +27,7 @@ function ChatComp({ socket, username, room }) {
         room,
         username,
         currentMessage,
-        file,
+        buffer: chunk,
         time:
           new Date(Date.now()).getHours() +
           ":" +
@@ -26,29 +40,30 @@ function ChatComp({ socket, username, room }) {
       console.log("enter your message first..!!!");
     }
   };
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(file);
-      fileReader.onload = () => {
-        resolve(fileReader.result);
-      };
-      fileReader.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
-  const handleFile = async (e) => {
+
+  const handleFile = (e) => {
     e.preventDefault();
-    const abc = await convertToBase64(e.target.files[0]);
-    setFile(abc);
+    console.log(e.target.files[0]);
+    let newFile = e.target.files[0];
+    let reader = new FileReader();
+    reader.onload = (e) => {
+      let buffer = new Uint8Array(reader.result);
+      shareFile(
+        {
+          filename: newFile.name,
+          total_buffer_size: buffer.length,
+          buffer_size: 1024,
+        },
+        buffer
+      );
+    };
+    reader.readAsArrayBuffer(newFile);
   };
 
-  useEffect(() => {
-    socket.on("recieve_message", (data) => {
-      setMessageList((list) => [...list, data]);
-    });
-  }, [socket]);
+  function shareFile(metadata, buffer) {
+    let chunk = buffer.slice(0, metadata.buffer_size);
+    setChunk(chunk);
+  }
 
   return (
     <div className="chat-window">
@@ -68,8 +83,8 @@ function ChatComp({ socket, username, room }) {
                   <div className="message-content">
                     <p>
                       {messagecontent.currentMessage} &nbsp;
-                      {messagecontent.file ? (
-                        <a href="#" download={messagecontent.file}>
+                      {messagecontent.buffer ? (
+                        <a href="#" download="#">
                           attachment
                         </a>
                       ) : null}
