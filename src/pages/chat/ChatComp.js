@@ -6,16 +6,15 @@ function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const [chunk, setChunk] = useState();
-  const [downloadedFile, setDownloadedFile] = useState([]);
+  const [FileName, setFileName] = useState("");
   let newfile = [];
   useEffect(() => {
     socket.on("recieve_message", (data) => {
       newfile.buffer = [];
-
+     // console.log("filename -- " + data.filename);
       newfile.buffer.push(data.buffer);
-      console.log(newfile.buffer);
-      download(new Blob(newfile.buffer), "any");
-      setDownloadedFile(newfile.buffer);
+     // console.log(newfile.buffer);
+     // download(new Blob(newfile.buffer), data.filename);
       new setMessageList((list) => [...list, data]);
     });
   }, [socket]);
@@ -28,6 +27,7 @@ function ChatComp({ socket, username, room }) {
         username,
         currentMessage,
         buffer: chunk,
+        filename: FileName,
         time:
           new Date(Date.now()).getHours() +
           ":" +
@@ -63,6 +63,8 @@ function ChatComp({ socket, username, room }) {
   function shareFile(metadata, buffer) {
     let chunk = buffer.slice(0, metadata.buffer_size);
     setChunk(chunk);
+    setFileName(metadata.filename);
+    // console.log("file name" + metadata.filename);
   }
 
   return (
