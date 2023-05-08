@@ -2,19 +2,14 @@
 import { useEffect, useState } from "react";
 import "./ChatCss.css";
 import ScrollToBottom from "react-scroll-to-bottom";
+
 function ChatComp({ socket, username, room }) {
+
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-  const [chunk, setChunk] = useState();
-  const [FileName, setFileName] = useState("");
-  let newfile = [];
+
   useEffect(() => {
     socket.on("recieve_message", (data) => {
-      newfile.buffer = [];
-     // console.log("filename -- " + data.filename);
-      newfile.buffer.push(data.buffer);
-     // console.log(newfile.buffer);
-     // download(new Blob(newfile.buffer), data.filename);
       new setMessageList((list) => [...list, data]);
     });
   }, [socket]);
@@ -22,17 +17,17 @@ function ChatComp({ socket, username, room }) {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (currentMessage !== "") {
+
       const messageData = {
         room,
         username,
         currentMessage,
-        buffer: chunk,
-        filename: FileName,
         time:
           new Date(Date.now()).getHours() +
           ":" +
           new Date(Date.now()).getMinutes(),
       };
+      
       await socket.emit("send_message", messageData);
       setMessageList((list) => [...list, messageData]);
       setCurrentMessage("");
@@ -43,29 +38,7 @@ function ChatComp({ socket, username, room }) {
 
   const handleFile = (e) => {
     e.preventDefault();
-    console.log(e.target.files[0]);
-    let newFile = e.target.files[0];
-    let reader = new FileReader();
-    reader.onload = (e) => {
-      let buffer = new Uint8Array(reader.result);
-      shareFile(
-        {
-          filename: newFile.name,
-          total_buffer_size: buffer.length,
-          buffer_size: 1024,
-        },
-        buffer
-      );
-    };
-    reader.readAsArrayBuffer(newFile);
   };
-
-  function shareFile(metadata, buffer) {
-    let chunk = buffer.slice(0, metadata.buffer_size);
-    setChunk(chunk);
-    setFileName(metadata.filename);
-    // console.log("file name" + metadata.filename);
-  }
 
   return (
     <div className="chat-window">
@@ -85,7 +58,7 @@ function ChatComp({ socket, username, room }) {
                   <div className="message-content">
                     <p>
                       {messagecontent.currentMessage} &nbsp;
-                      {messagecontent.buffer ? (
+                      {messagecontent ? (
                         <a href="#" download="#">
                           attachment
                         </a>
@@ -118,7 +91,7 @@ function ChatComp({ socket, username, room }) {
           </button>
           <input
             type="file"
-            id="myfile"
+            id="file"
             name="file"
             onChange={handleFile}
           ></input>
