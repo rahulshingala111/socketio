@@ -16,7 +16,7 @@ const io = new Server(server, {
 });
 //Schema
 const User = require("./schema/User");
-
+const Room = require("./schema/Room");
 //header origin
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -55,80 +55,22 @@ app.get("/", (req, res) => {
   res.sendStatus(200);
 });
 
-app.post("/register", (req, res) => {
+app.post("/login", (req, res) => {
   try {
-    User.findOne({ email: req.body.email })
-      .then((result) => {
-        if (result === null || result === "" || result === undefined) {
-          User.insertMany({
-            firstname: req.body.firstname,
-            lastname: req.body.lastname,
-            email: req.body.email,
-            password: req.body.password,
-          });
-          console.log("user registerred successfully");
-          res.sendStatus(200);
-        } else {
-          console.log("user already exist");
-          res.sendStatus(401);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        res.sendStatus(404);
-      });
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(404);
-  }
-});
-const chechEmailPassword = (req, res, next) => {
-  try {
-    User.findOne({ email: req.body.email, password: req.body.password })
-      .then((result) => {
-        if (result === null || result === "" || result === undefined) {
-          res.sendStatus(401);
-        } else {
-          next();
-        }
-      })
-      .catch((error) => {
-        console.log(error);
+    User.findOne({ email: req.body.email }).then((response) => {
+      if (
+        response.email === req.body.email &&
+        response.password === req.body.password
+      ) {
+        res.sendStatus(200);
+      } else {
         res.sendStatus(401);
-      });
+      }
+    });
   } catch (error) {
-    console.log(error);
     res.sendStatus(404);
   }
-};
-app.post("/login", chechEmailPassword, (req, res) => {
-  res.sendStatus(200);
 });
-
-// const isAuthenticated = async (req, res, next) => {
-//   try {
-//     const secret = new TextEncoder().encode("rahulSecret");
-//     const jwt = req.headers.myheader;
-//     const { payload } = await jose.jwtVerify(jwt, secret);
-//     try {
-//       User.findOne({ email: payload.email })
-//         .then((result) => {
-//           res.send(result);
-//           next();
-//         })
-//         .catch((error) => {
-//           console.log(error);
-//           res.sendStatus(401);
-//         });
-//     } catch (err) {
-//       console.log(err);
-//       res.sendStatus(403);
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.sendStatus(403);
-//   }
-// };
 
 //#endregion
 
@@ -148,7 +90,20 @@ io.on("connection", (socket) => {
 
   socket.on("send_message", (messageData) => {
     console.log(messageData);
+    // Room.insertMany({
+    //   room: messageData.room,
+    //   username: messageData.username,
+    //   message: messageData.currentMessage,
+    //   time: messageData.time,
+    // });
     socket.to(messageData.room).emit("recieve_message", messageData);
+  });
+
+  socket.on("room_name", (room) => {
+    console.log("this is room " + room);
+    Room.find({ room: room }).then((response) => {
+      socket.emit("last_100_message", response);
+    });
   });
 
   socket.on("disconnect", () => {

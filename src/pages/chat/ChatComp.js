@@ -4,20 +4,34 @@ import "./ChatCss.css";
 import ScrollToBottom from "react-scroll-to-bottom";
 
 function ChatComp({ socket, username, room }) {
-
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
 
+  console.log("beg");
+
+  useEffect(() => {
+    socket.emit("room_name", room);
+    socket.on("last_100_message", (data) => {
+      console.log("hi");
+      setMessageList((list) => [...list, data]);
+    });
+  }, []);
+
   useEffect(() => {
     socket.on("recieve_message", (data) => {
-      new setMessageList((list) => [...list, data]);
+      setMessageList((list) => [...list, data]);
     });
   }, [socket]);
+
+  function sortMessagesByDate(messages) {
+    return messages.sort(
+      (a, b) => parseInt(a.__createdtime__) - parseInt(b.__createdtime__)
+    );
+  }
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (currentMessage !== "") {
-
       const messageData = {
         room,
         username,
@@ -27,7 +41,7 @@ function ChatComp({ socket, username, room }) {
           ":" +
           new Date(Date.now()).getMinutes(),
       };
-      
+
       await socket.emit("send_message", messageData);
       setMessageList((list) => [...list, messageData]);
       setCurrentMessage("");
@@ -39,7 +53,7 @@ function ChatComp({ socket, username, room }) {
   const handleFile = (e) => {
     e.preventDefault();
   };
-
+  console.log("message list ");
   return (
     <div className="chat-window">
       <div className="chat-header">
@@ -57,12 +71,12 @@ function ChatComp({ socket, username, room }) {
                 <div>
                   <div className="message-content">
                     <p>
-                      {messagecontent.currentMessage} &nbsp;
-                      {messagecontent ? (
+                      {messagecontent.message} &nbsp;
+                      {/* {!messagecontent ? (
                         <a href="#" download="#">
                           attachment
                         </a>
-                      ) : null}
+                      ) : null} */}
                     </p>
                   </div>
                   <div className="message-meta">
