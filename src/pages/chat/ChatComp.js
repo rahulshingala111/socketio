@@ -2,32 +2,22 @@
 import { useEffect, useState } from "react";
 import "./ChatCss.css";
 import ScrollToBottom from "react-scroll-to-bottom";
+//import { writeFile } from "fs";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-
-  console.log("beg");
-
-  useEffect(() => {
-    socket.emit("room_name", room);
-    socket.on("last_100_message", (data) => {
-      console.log("hi");
-      setMessageList((list) => [...list, data]);
-    });
-  }, []);
+  const [file, setfile] = useState();
 
   useEffect(() => {
+    console.log("blah");
     socket.on("recieve_message", (data) => {
       setMessageList((list) => [...list, data]);
     });
+    socket.on("rrr", (name) => {
+      console.log(name);
+    });
   }, [socket]);
-
-  function sortMessagesByDate(messages) {
-    return messages.sort(
-      (a, b) => parseInt(a.__createdtime__) - parseInt(b.__createdtime__)
-    );
-  }
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -48,12 +38,22 @@ function ChatComp({ socket, username, room }) {
     } else {
       console.log("enter your message first..!!!");
     }
+    // try {
+    //   socket.emit("file", file, { name: "rahul" }, (response) => {
+    //     console.log(response.status);
+    //     console.log("emmited");
+    //   });
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   const handleFile = (e) => {
     e.preventDefault();
+    setfile(e.target.files[0]);
+    console.log(e.target.files[0]);
   };
-  console.log("message list ");
+
   return (
     <div className="chat-window">
       <div className="chat-header">
@@ -71,7 +71,7 @@ function ChatComp({ socket, username, room }) {
                 <div>
                   <div className="message-content">
                     <p>
-                      {messagecontent.message} &nbsp;
+                      {messagecontent.currentMessage} &nbsp;
                       {/* {!messagecontent ? (
                         <a href="#" download="#">
                           attachment

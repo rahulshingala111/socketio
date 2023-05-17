@@ -13,7 +13,7 @@ function Chat() {
   const handleJoinRoom = () => {
     if (username !== "" && room !== "") {
       socket.emit("join_room", room);
-      setShowChat(true)
+      setShowChat(true);
     } else {
       console.log("Enter both details....");
     }

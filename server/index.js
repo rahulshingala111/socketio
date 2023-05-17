@@ -13,6 +13,7 @@ const io = new Server(server, {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
+  maxHttpBufferSize: 1e8,
 });
 //Schema
 const User = require("./schema/User");
@@ -79,10 +80,6 @@ app.get("/chat", (req, res) => {});
 io.on("connection", (socket) => {
   console.log("user connected - " + socket.id);
 
-  socket.on("chat message", (msg) => {
-    console.log("message :" + msg);
-  });
-
   socket.on("join_room", (room) => {
     socket.join(room);
     console.log(`user ${socket.id} joined ${room} room`);
@@ -99,15 +96,23 @@ io.on("connection", (socket) => {
     socket.to(messageData.room).emit("recieve_message", messageData);
   });
 
-  socket.on("room_name", (room) => {
-    console.log("this is room " + room);
-    Room.find({ room: room }).then((response) => {
-      socket.emit("last_100_message", response);
-    });
-  });
 
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);
+  });
+
+  socket.on("file", (file, name, callback) => {
+    if (file) {
+      socket.emit("rrr", file);
+      callback({
+        status: "OK",
+      });
+    } else {
+      callback({
+        status: "NOT OK",
+      });
+    }
+    console.log(file);
   });
 });
 
