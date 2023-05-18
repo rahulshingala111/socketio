@@ -58,18 +58,17 @@ app.get("/", (req, res) => {
 
 app.post("/login", (req, res) => {
   try {
-    User.findOne({ email: req.body.email }).then((response) => {
-      if (
-        response.email === req.body.email &&
-        response.password === req.body.password
-      ) {
-        res.sendStatus(200);
+    User.findOne({ username: req.body.username }).then((response) => {
+      if (response?.username === req.body.username) {
+        res.status(200).json({
+          id: response.id,
+        });
       } else {
         res.sendStatus(401);
       }
     });
   } catch (error) {
-    res.sendStatus(404);
+    res.sendStatus(401);
   }
 });
 
@@ -95,7 +94,6 @@ io.on("connection", (socket) => {
     // });
     socket.to(messageData.room).emit("recieve_message", messageData);
   });
-
 
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);

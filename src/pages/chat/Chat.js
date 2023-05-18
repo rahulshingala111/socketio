@@ -3,20 +3,29 @@ import "../chat/Chat.css";
 import "./ChatCss.css";
 import { io } from "socket.io-client";
 import ChatComp from "./ChatComp";
+import axios from "axios";
 const socket = io.connect("http://localhost:3001");
 
 function Chat() {
   const [username, setUsername] = useState("");
-  const [room, setRoom] = useState("");
+  const [room, setRoom] = useState(null);
   const [showChat, setShowChat] = useState(false);
 
-  const handleJoinRoom = () => {
-    if (username !== "" && room !== "") {
-      socket.emit("join_room", room);
-      setShowChat(true);
-    } else {
-      console.log("Enter both details....");
-    }
+  const handleJoinRoom = async (e) => {
+    e.preventDefault();
+    const data = {
+      username,
+    };
+    await axios
+      .post("http://localhost:5000/login", data)
+      .then((response) => {
+        console.log(response.data.id);
+        setRoom(response.data.id);
+        setShowChat(true);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -24,26 +33,19 @@ function Chat() {
       {!showChat ? (
         <div className="joinChatContainer">
           <div>
-            <h2>Join chat</h2>
+            <h2>Enter Username</h2>
           </div>
           <div>
             <input
               type="text"
-              placeholder="name......"
+              placeholder="ex. rahul"
               onChange={(e) => {
                 setUsername(e.target.value);
               }}
             />
-            <input
-              type="text"
-              placeholder="room No..."
-              onChange={(e) => {
-                setRoom(e.target.value);
-              }}
-            />
           </div>
           <div>
-            <button onClick={handleJoinRoom}>Join Room</button>
+            <button onClick={handleJoinRoom}>Join Chat</button>
           </div>
         </div>
       ) : (
