@@ -9,6 +9,8 @@ function ChatComp({ socket, username, room }) {
   const [messageList, setMessageList] = useState([]);
   const [file, setfile] = useState();
 
+  var currentId = room;
+  
   useEffect(() => {
     console.log("blah");
     socket.on("recieve_message", (data) => {

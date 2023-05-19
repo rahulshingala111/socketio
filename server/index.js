@@ -18,6 +18,8 @@ const io = new Server(server, {
 //Schema
 const User = require("./schema/User");
 const Room = require("./schema/Room");
+const Conver = require("./schema/Conversation");
+const Messg = require("./schema/Message");
 //header origin
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -75,6 +77,46 @@ app.post("/login", (req, res) => {
 //#endregion
 
 app.get("/chat", (req, res) => {});
+
+app.post("/api/conversation", async (req, res) => {
+  try {
+    const abc = await Conver.insertMany({
+      member: [req.body.senderId, req.body.reciverId],
+    });
+    res.status(200).json(abc);
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
+app.get("/api/conversation/:userId", async (req, res) => {
+  try {
+    await Conver.find({ member: { $in: [req.params.userId] } })
+      .then((response) => {
+        res.status(200).json(response);
+      })
+      .catch((error) => {
+        console.log("cant find");
+        res.status(401).json(error);
+      });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post("/api/message", async (req, res) => {
+  try {
+    const abc = await Messg.insertMany({
+      conversationId: req.body.conversationId,
+      sender: req.body.sender,
+      text: req.body.text,
+    });
+    res.status(200).json(abc);
+  } catch (error) {
+    res.sendStatus(401);
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("user connected - " + socket.id);
