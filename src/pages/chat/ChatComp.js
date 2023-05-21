@@ -22,13 +22,18 @@ function ChatComp({ socket, username, room }) {
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
 
-
-  useEffect(()=>{
-    socket.on('welcome',(mssg)=>{
+  useEffect(() => {
+    socket.on("welcome", (mssg) => {
       console.log(mssg);
-    })
-  },[socket])
+    });
+  }, [socket]);
 
+  useEffect(() => {
+    socket.emit("addUser", room);
+    socket.on("getUsers", (users) => {
+      console.log(users);
+    });
+  }, [room]);
 
   useEffect(() => {
     const getconversation = async () => {
@@ -68,6 +73,13 @@ function ChatComp({ socket, username, room }) {
     // } catch (error) {
     //   console.log(error);
     // }
+    const receiverId = curretChat.member.find((memeber) => memeber !== room);
+    await socket.emit("sendMessage", {
+      senderId: room,
+      receiverId,
+      text: currentMessage,
+    });
+    setCurrentMessage("");
   };
 
   const handleFile = (e) => {
