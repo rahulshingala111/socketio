@@ -118,28 +118,48 @@ app.post("/api/message", async (req, res) => {
   }
 });
 
+app.get("/api/message/:conversationId", async (req, res) => {
+  try {
+    const abc = await Messg.find({ conversationId: req.params.conversationId });
+    res.status(200).json(abc);
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
+app.get("/api/getuser/:friendId", (req, res) => {
+  try {
+    User.findById({ _id: req.params.friendId })
+      .then((response) => {
+        res.status(200).json(response);
+      })
+      .catch((error) => {
+        res.status(401).json(error);
+      });
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
+app.get("/api/messages/:currentchatid", (req, res) => {
+  try {
+    Messg.find({ conversationId: req.params.currentchatid })
+      .then((response) => {
+        res.status(200).json(response);
+      })
+      .catch((error) => {
+        res.status(401).json(error);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 io.on("connection", (socket) => {
   console.log("user connected - " + socket.id);
 
-  socket.on("join_room", (room) => {
-    socket.join(room);
-    console.log(`user ${socket.id} joined ${room} room`);
-  });
+  socket.emit("welcome", "socket.io connected");
 
-  socket.on("send_message", (messageData) => {
-    console.log(messageData);
-    // Room.insertMany({
-    //   room: messageData.room,
-    //   username: messageData.username,
-    //   message: messageData.currentMessage,
-    //   time: messageData.time,
-    // });
-    socket.to(messageData.room).emit("recieve_message", messageData);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected", socket.id);
-  });
 
   socket.on("file", (file, name, callback) => {
     if (file) {
