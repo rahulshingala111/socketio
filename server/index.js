@@ -181,12 +181,24 @@ io.on("connection", (socket) => {
   //SEND MESSAGE
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
     console.log(senderId + " " + receiverId + " " + text);
-    const user = getUser(receiverId);
-    console.log(user);
-    io.to(user?.socketId).emit("getMessage", {
-      senderId,
-      text,
-    });
+    Conver.find({ member: { $in: [senderId] }, member: { $in: [receiverId] } })
+      .then((response) => {
+        var conversationId = response[0].id;
+        Messg.insertMany({
+          conversationId,
+          sender: senderId,
+          text: text,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    //const user = getUser(receiverId);
+    //console.log(user);
+    // io.to(receiverId).emit("getMessage", {
+    //   senderId,
+    //   text,
+    // });
   });
 
   //DISCONNECT
