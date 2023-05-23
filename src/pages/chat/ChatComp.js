@@ -22,6 +22,14 @@ function ChatComp({ socket, username, room }) {
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
 
+  useEffect(()=>{
+    socket.on("getMessage",(data)=>{
+      console.log('inside getmessage');
+      console.log(data);
+    })
+  },[socket])
+
+
   useEffect(() => {
     socket.on("welcome", (mssg) => {
       console.log(mssg);
