@@ -22,24 +22,21 @@ function ChatComp({ socket, username, room }) {
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
 
-  useEffect(()=>{
-    socket.on("getMessage",(data)=>{
-      console.log('inside getmessage');
-      console.log(data);
-    })
-  },[socket])
-
-
-  useEffect(() => {
-    socket.on("welcome", (mssg) => {
-      console.log(mssg);
+  useEffect(async () => {
+    console.log("welcome");
+    await socket.on("getMessage", (data) => {
+      console.log(data.text);
+      setMessages((prev) => [
+        ...prev,
+        { text: data.text, sender: data.senderId },
+      ]);
     });
   }, [socket]);
 
   useEffect(() => {
     socket.emit("addUser", room);
     socket.on("getUsers", (users) => {
-      console.log(users);
+      //console.log(users);
     });
   }, [room]);
 
@@ -73,6 +70,18 @@ function ChatComp({ socket, username, room }) {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
+    const receiverId = curretChat.member.find((memeber) => memeber !== room);
+    await socket.emit("sendMessage", {
+      senderId: room,
+      receiverId,
+      text: currentMessage,
+    });
+    setCurrentMessage("");
+    setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
+  };
+
+  const handleFile = (e) => {
+    e.preventDefault();
     // try {
     //   socket.emit("file", file, { name: "rahul" }, (response) => {
     //     console.log(response.status);
@@ -81,26 +90,25 @@ function ChatComp({ socket, username, room }) {
     // } catch (error) {
     //   console.log(error);
     // }
-    const receiverId = curretChat.member.find((memeber) => memeber !== room);
-    await socket.emit("sendMessage", {
-      senderId: room,
-      receiverId,
-      text: currentMessage,
-    });
-    setCurrentMessage("");
-  };
-
-  const handleFile = (e) => {
-    e.preventDefault();
     setfile(e.target.files[0]);
     console.log(e.target.files[0]);
   };
+
+  function metadataData(data) {
+    const receiverId = data.member.find((memeber) => memeber !== room);
+    socket.emit("metadata", {
+      senderId: room,
+      receiverId: receiverId,
+    });
+  }
   return (
     <div>
       {conversation.map((c, index) => (
         <div
+          key={index}
           onClick={() => {
             setCurrentChat(c);
+            metadataData(c);
           }}
         >
           <Conversation conversation={c} currentUser={room} key={index} />
@@ -110,7 +118,7 @@ function ChatComp({ socket, username, room }) {
       {curretChat ? (
         <div className="chat-window">
           <div className="chat-header">
-            <p>Live Chat</p>
+            <p>Live Chat with {username}</p>
           </div>
           <div className="chat-body">
             <ScrollToBottom className="message-container">

@@ -169,7 +169,6 @@ const getUser = (userId) => {
 
 io.on("connection", (socket) => {
   console.log("user connected - " + socket.id);
-
   socket.emit("welcome", "socket.io connected");
 
   //CONNECT
@@ -178,25 +177,34 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
+  socket.on("metadata", (data) => {
+    Conver.find({
+      member: { $in: [data.senderId] },
+      member: { $in: [data.receiverId] },
+    }).then((response) => {
+      var conversationId = response[0].id;
+      socket.join("room", conversationId);
+    });
+  });
+
   //SEND MESSAGE
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    console.log(senderId + " " + receiverId + " " + text);
-    Conver.find({ member: { $in: [senderId] }, member: { $in: [receiverId] } })
-      .then((response) => {
-        var conversationId = response[0].id;
-        socket.emit("getMessage", {
-          senderId,
-          text,
-        })
-        // Messg.insertMany({
-        //   conversationId,
-        //   sender: senderId,
-        //   text: text,
-        // });
-      })
-      .catch((error) => {
-        console.log(error);
+    console.log("text " + text);
+    Conver.find({
+      member: { $in: [senderId] },
+      member: { $in: [receiverId] },
+    }).then(async (response) => {
+      var conversationId = response[0].id;
+      // await Messg.insertMany({
+      //   conversationId,
+      //   sender: senderId,
+      //   text: text,
+      // });
+      socket.to("room").emit("getMessage", {
+        senderId,
+        text,
       });
+    });
   });
 
   //DISCONNECT
