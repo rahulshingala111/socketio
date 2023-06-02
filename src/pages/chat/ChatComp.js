@@ -22,15 +22,29 @@ function ChatComp({ socket, username, room }) {
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
 
-  useEffect(async () => {
+  useEffect(() => {
+    // console.log("welcome");
+    // await socket.on("getMessage", (data) => {
+    //   console.log(data.text);
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     { text: data.text, sender: data.senderId },
+    //   ]);
+    // });
     console.log("welcome");
-    await socket.on("getMessage", (data) => {
-      console.log(data.text);
-      setMessages((prev) => [
-        ...prev,
-        { text: data.text, sender: data.senderId },
-      ]);
-    });
+    async function mess() {
+      await socket.on("getMessage", (data) => {
+        console.log(data.text);
+        setMessages((prev) => [
+          ...prev,
+          { text: data.text, sender: data.senderId },
+        ]);
+      });
+      socket.on("test", (data) => {
+        console.log(data);
+      });
+    }
+    mess();
   }, [socket]);
 
   useEffect(() => {
@@ -70,28 +84,26 @@ function ChatComp({ socket, username, room }) {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    const receiverId = curretChat.member.find((memeber) => memeber !== room);
-    await socket.emit("sendMessage", {
-      senderId: room,
-      receiverId,
-      text: currentMessage,
-    });
-    setCurrentMessage("");
-    setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
-  };
-
-  const handleFile = (e) => {
-    e.preventDefault();
-    // try {
-    //   socket.emit("file", file, { name: "rahul" }, (response) => {
-    //     console.log(response.status);
-    //     console.log("emmited");
-    //   });
-    // } catch (error) {
-    //   console.log(error);
+    // if (currentMessage === "") {
+    //   return null;
     // }
-    setfile(e.target.files[0]);
-    console.log(e.target.files[0]);
+    // const receiverId = curretChat.member.find((memeber) => memeber !== room);
+    // await socket.emit("sendMessage", {
+    //   senderId: room,
+    //   receiverId,
+    //   text: currentMessage,
+    // });
+    // setCurrentMessage("");
+    // setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
+
+    try {
+      socket.emit("file", file, { name: "rahul" }, (response) => {
+        console.log(response.status);
+        console.log("emmited");
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   function metadataData(data) {
@@ -101,6 +113,7 @@ function ChatComp({ socket, username, room }) {
       receiverId: receiverId,
     });
   }
+
   return (
     <div>
       {conversation.map((c, index) => (
@@ -151,7 +164,11 @@ function ChatComp({ socket, username, room }) {
                 type="file"
                 id="file"
                 name="file"
-                onChange={handleFile}
+                onChange={(e) => {
+                  e.preventDefault();
+                  setfile(e.target.files[0]);
+                  console.log(e.target.files[0]);
+                }}
               ></input>
             </form>
           </div>

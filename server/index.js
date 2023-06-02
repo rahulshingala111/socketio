@@ -13,7 +13,7 @@ const io = new Server(server, {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
-  maxHttpBufferSize: 1e8,
+  maxHttpBufferSize: 1e11,
 });
 //Schema
 const User = require("./schema/User");
@@ -216,7 +216,10 @@ io.on("connection", (socket) => {
 
   socket.on("file", (file, name, callback) => {
     if (file) {
-      socket.emit("rrr", file);
+      socket.emit("test", file, { name: "rahul" }, (response) => {
+        console.log(response.status);
+        console.log("emmited");
+      });
       callback({
         status: "OK",
       });
