@@ -13,6 +13,7 @@ import {
   MessageInput,
 } from "@chatscope/chat-ui-kit-react";
 import Conversation from "./Conversation";
+import { Buffer } from 'buffer';
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -23,15 +24,24 @@ function ChatComp({ socket, username, room }) {
   const [messages, setMessages] = useState(null);
 
   useEffect(() => {
-    // console.log("welcome");
-    // await socket.on("getMessage", (data) => {
-    //   console.log(data.text);
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     { text: data.text, sender: data.senderId },
-    //   ]);
-    // });
     console.log("welcome");
+    const downld = (data) => {
+      const nodeJSBuffer = {
+        type: "Buffer",
+        data: data,
+      };
+      const buffer = Buffer.from(data);
+      const blob = new Blob([buffer]);
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      a.href = url;
+      a.download = "filename.jpg";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
     async function mess() {
       await socket.on("getMessage", (data) => {
         console.log(data.text);
@@ -42,6 +52,7 @@ function ChatComp({ socket, username, room }) {
       });
       socket.on("test", (data) => {
         console.log(data);
+        downld(data);
       });
     }
     mess();
@@ -84,20 +95,31 @@ function ChatComp({ socket, username, room }) {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    // if (currentMessage === "") {
-    //   return null;
-    // }
-    // const receiverId = curretChat.member.find((memeber) => memeber !== room);
-    // await socket.emit("sendMessage", {
-    //   senderId: room,
-    //   receiverId,
-    //   text: currentMessage,
-    // });
-    // setCurrentMessage("");
-    // setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
+    if (currentMessage === "") {
+      return null;
+    }
+    const receiverId = curretChat.member.find((memeber) => memeber !== room);
+    await socket.emit("sendMessage", {
+      senderId: room,
+      receiverId,
+      text: currentMessage,
+    });
+    setCurrentMessage("");
+    setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
+  };
 
+  const handleSendFile = (e) => {
+    e.preventDefault();
+    console.log(file);
+    if (file === undefined) {
+      return false;
+    }
+    const metadata = {
+      name: file.name,
+      filetype: file.type,
+    };
     try {
-      socket.emit("file", file, { name: "rahul" }, (response) => {
+      socket.emit("file", file, metadata, (response) => {
         console.log(response.status);
         console.log("emmited");
       });
@@ -170,6 +192,7 @@ function ChatComp({ socket, username, room }) {
                   console.log(e.target.files[0]);
                 }}
               ></input>
+              <button onClick={handleSendFile}>Send file</button>
             </form>
           </div>
         </div>

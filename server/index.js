@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const app = express();
+const { writeFile } = require("fs");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
@@ -214,9 +215,10 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
-  socket.on("file", (file, name, callback) => {
+  socket.on("file", (file, metadata, callback) => {
+    console.log(file);
     if (file) {
-      socket.emit("test", file, { name: "rahul" }, (response) => {
+      socket.to("room").emit("test", file, metadata, (response) => {
         console.log(response.status);
         console.log("emmited");
       });
@@ -228,7 +230,6 @@ io.on("connection", (socket) => {
         status: "NOT OK",
       });
     }
-    console.log(file);
   });
 });
 
