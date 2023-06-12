@@ -3,15 +3,6 @@ import { useEffect, useState } from "react";
 import "./ChatCss.css";
 import ScrollToBottom from "react-scroll-to-bottom";
 import axios from "axios";
-//import { writeFile } from "fs";
-import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-  MessageInput,
-} from "@chatscope/chat-ui-kit-react";
 import Conversation from "./Conversation";
 import "./Download";
 import Download from "./Download";
@@ -28,14 +19,12 @@ function ChatComp({ socket, username, room }) {
     console.log("welcome");
     async function mess() {
       await socket.on("getMessage", (data) => {
-        console.log(data.text);
         setMessages((prev) => [
           ...prev,
           { text: data.text, sender: data.senderId },
         ]);
       });
       socket.on("test", (data) => {
-        console.log(data);
         setMessages((prev) => [
           ...prev,
           { text: "file - ", sender: data.sender, nameOFfile: data.nameOFfile },
@@ -104,16 +93,27 @@ function ChatComp({ socket, username, room }) {
     const noWDate = `${username}-${newDate.getDate()}-${
       newDate.getMonth() + 1
     }-${newDate.getFullYear()}-${newDate.getHours()}-${newDate.getMinutes()}-${newDate.getSeconds()}`;
+    const receiverId = curretChat.member.find((memeber) => memeber !== room);
     const metadata = {
       name: file.name,
       filetype: file.type,
       sentDate: noWDate,
       sender: room,
+      senderId: room,
+      receiverId,
     };
     try {
       socket.emit("file", file, metadata, (response) => {
         console.log(response.status);
       });
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "file - ",
+          sender: room,
+          nameOFfile: `${noWDate}-${file.name}`,
+        },
+      ]);
     } catch (error) {
       console.log(error);
     }
@@ -179,7 +179,6 @@ function ChatComp({ socket, username, room }) {
                 onChange={(e) => {
                   e.preventDefault();
                   setfile(e.target.files[0]);
-                  console.log(e.target.files[0]);
                 }}
               ></input>
               <button onClick={handleSendFile}>Send file</button>

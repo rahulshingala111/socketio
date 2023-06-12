@@ -173,7 +173,6 @@ app.get("/download/:filename", (req, res) => {
     console.log(req.params.filename);
     const filename = req.params.filename;
     const filePath = path.join(__dirname, `/tmp/files/${filename}`);
-
     res.download(filePath, (err) => {
       if (err) {
         console.log(err);
@@ -245,6 +244,7 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
+  //SAVE FILE
   socket.on("file", (file, metadata, callback) => {
     if (file) {
       const fileName = `${metadata.sentDate}-${metadata.name}`;
@@ -253,6 +253,18 @@ io.on("connection", (socket) => {
           console.log(err);
           callback({ status: "NOT SAVED" });
         } else {
+          Conver.find({
+            member: { $in: [metadata.senderId] },
+            member: { $in: [metadata.receiverId] },
+          }).then((response) => {
+            var conversationId = response[0].id;
+            // Messg.insertMany({
+            //   conversationId,
+            //   sender: metadata.senderId,
+            //   text: null,
+            //   nameOFfile: fileName,
+            // });
+          });
           socket
             .to("room")
             .emit("test", { nameOFfile: fileName, sender: metadata.sender });
