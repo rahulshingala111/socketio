@@ -3,7 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const app = express();
-const { writeFile } = require("fs");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
@@ -16,6 +15,7 @@ const io = new Server(server, {
   },
   maxHttpBufferSize: 1e11,
 });
+const fs = require("fs");
 //Schema
 const User = require("./schema/User");
 const Room = require("./schema/Room");
@@ -32,13 +32,24 @@ app.use((req, res, next) => {
   next();
 });
 
+// //-------- image upload
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/images");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "_" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+
 // idk
 app.use(express.static(path.join(__dirname, "..", "public")));
-app.use(express.json({ limit: "50mb" }));
-app.use(
-  express.urlencoded({ limit: "50mb", extended: false, parameterLimit: 50000 })
-);
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(upload.array());
+app.use(express.static("public"));
 //mongoose
 mongoose.set("strictQuery", true);
 mongoose.connect("mongodb://0.0.0.0:27017/socketio", {
@@ -156,6 +167,14 @@ app.get("/api/messages/:currentchatid", (req, res) => {
   }
 });
 
+app.get("/download/:filename", (req, res) => {
+  try {
+    console.log(req.params.filename);
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
 let users = [];
 const addUser = (userId, socketId) => {
   !users.some((user) => user.userId === userId) &&
@@ -216,18 +235,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("file", (file, metadata, callback) => {
-    console.log(file);
     if (file) {
-      socket.to("room").emit("test", file, metadata, (response) => {
-        console.log(response.status);
-        console.log("emmited");
-      });
-      callback({
-        status: "OK",
+      const fileName = `${metadata.sentDate}-${metadata.name}`;
+      fs.writeFile(`./tmp/files/${fileName}`, file, (err) => {
+        if (err) {
+          console.log(err);
+          callback({ status: "NOT SAVED" });
+        } else {
+          socket.to("room").emit("test", { nameOFfile: fileName });
+          console.log("file saved");
+        }
       });
     } else {
       callback({
-        status: "NOT OK",
+        status: "NO FILE",
       });
     }
   });

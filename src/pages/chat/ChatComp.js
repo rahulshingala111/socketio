@@ -13,7 +13,7 @@ import {
   MessageInput,
 } from "@chatscope/chat-ui-kit-react";
 import Conversation from "./Conversation";
-import { Buffer } from 'buffer';
+import { Buffer } from "buffer";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -25,23 +25,6 @@ function ChatComp({ socket, username, room }) {
 
   useEffect(() => {
     console.log("welcome");
-    const downld = (data) => {
-      const nodeJSBuffer = {
-        type: "Buffer",
-        data: data,
-      };
-      const buffer = Buffer.from(data);
-      const blob = new Blob([buffer]);
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      a.style = "display: none";
-      a.href = url;
-      a.download = "filename.jpg";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    };
     async function mess() {
       await socket.on("getMessage", (data) => {
         console.log(data.text);
@@ -52,7 +35,10 @@ function ChatComp({ socket, username, room }) {
       });
       socket.on("test", (data) => {
         console.log(data);
-        downld(data);
+        setMessages((prev) => [
+          ...prev,
+          { text: null, sender: null, file: data.nameOFfile },
+        ]);
       });
     }
     mess();
@@ -61,7 +47,7 @@ function ChatComp({ socket, username, room }) {
   useEffect(() => {
     socket.emit("addUser", room);
     socket.on("getUsers", (users) => {
-      //console.log(users);
+      // console.log(users);
     });
   }, [room]);
 
@@ -108,25 +94,32 @@ function ChatComp({ socket, username, room }) {
     setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
   };
 
-  const handleSendFile = (e) => {
+  const handleSendFile = async (e) => {
     e.preventDefault();
-    console.log(file);
     if (file === undefined) {
       return false;
     }
+    const newDate = new Date();
+    const noWDate = `${username}-${newDate.getDate()}-${
+      newDate.getMonth() + 1
+    }-${newDate.getFullYear()}-${newDate.getHours()}-${newDate.getMinutes()}-${newDate.getSeconds()}`;
     const metadata = {
       name: file.name,
       filetype: file.type,
+      sentDate: noWDate,
     };
     try {
       socket.emit("file", file, metadata, (response) => {
         console.log(response.status);
-        console.log("emmited");
       });
     } catch (error) {
       console.log(error);
     }
   };
+
+  function handleDownload(data) {
+    console.log(data);
+  }
 
   function metadataData(data) {
     const receiverId = data.member.find((memeber) => memeber !== room);
@@ -163,7 +156,9 @@ function ChatComp({ socket, username, room }) {
                   className="message"
                   id={m.sender === room ? "other" : "you"}
                 >
-                  <div className="message-content">{m.text}</div>
+                  <div className="message-content">
+                    {m.text}
+                  </div>
                 </div>
               ))}
             </ScrollToBottom>
