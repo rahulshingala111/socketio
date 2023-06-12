@@ -13,7 +13,8 @@ import {
   MessageInput,
 } from "@chatscope/chat-ui-kit-react";
 import Conversation from "./Conversation";
-import { Buffer } from "buffer";
+import "./Download";
+import Download from "./Download";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -37,7 +38,7 @@ function ChatComp({ socket, username, room }) {
         console.log(data);
         setMessages((prev) => [
           ...prev,
-          { text: null, sender: null, file: data.nameOFfile },
+          { text: "file - ", sender: data.sender, nameOFfile: data.nameOFfile },
         ]);
       });
     }
@@ -107,6 +108,7 @@ function ChatComp({ socket, username, room }) {
       name: file.name,
       filetype: file.type,
       sentDate: noWDate,
+      sender: room,
     };
     try {
       socket.emit("file", file, metadata, (response) => {
@@ -117,10 +119,6 @@ function ChatComp({ socket, username, room }) {
     }
   };
 
-  function handleDownload(data) {
-    console.log(data);
-  }
-
   function metadataData(data) {
     const receiverId = data.member.find((memeber) => memeber !== room);
     socket.emit("metadata", {
@@ -128,7 +126,6 @@ function ChatComp({ socket, username, room }) {
       receiverId: receiverId,
     });
   }
-
   return (
     <div>
       {conversation.map((c, index) => (
@@ -156,9 +153,7 @@ function ChatComp({ socket, username, room }) {
                   className="message"
                   id={m.sender === room ? "other" : "you"}
                 >
-                  <div className="message-content">
-                    {m.text}
-                  </div>
+                  <Download text={m.text} nameOFfile={m.nameOFfile} />
                 </div>
               ))}
             </ScrollToBottom>

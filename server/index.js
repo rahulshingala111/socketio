@@ -34,6 +34,7 @@ app.use((req, res, next) => {
 
 // //-------- image upload
 const multer = require("multer");
+const { log } = require("console");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/images");
@@ -170,6 +171,16 @@ app.get("/api/messages/:currentchatid", (req, res) => {
 app.get("/download/:filename", (req, res) => {
   try {
     console.log(req.params.filename);
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, `/tmp/files/${filename}`);
+
+    res.download(filePath, (err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("succses");
+      }
+    });
   } catch (error) {
     res.status(401).json(error);
   }
@@ -242,7 +253,9 @@ io.on("connection", (socket) => {
           console.log(err);
           callback({ status: "NOT SAVED" });
         } else {
-          socket.to("room").emit("test", { nameOFfile: fileName });
+          socket
+            .to("room")
+            .emit("test", { nameOFfile: fileName, sender: metadata.sender });
           console.log("file saved");
         }
       });
