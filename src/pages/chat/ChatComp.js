@@ -8,6 +8,7 @@ import "./Download";
 import Download from "./Download";
 
 function ChatComp({ socket, username, room }) {
+  
   const [currentMessage, setCurrentMessage] = useState("");
   const [file, setfile] = useState();
   const [conversation, setConversation] = useState([]);
@@ -15,6 +16,23 @@ function ChatComp({ socket, username, room }) {
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
 
+  //#region  --notification--
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const sendNotification = () => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Hello!", {
+        body: "This is a notification",
+      });
+    }
+  };
+  //#endregion
+
+  //#region --message recive--
   useEffect(() => {
     console.log("welcome");
     async function mess() {
@@ -34,13 +52,18 @@ function ChatComp({ socket, username, room }) {
     mess();
   }, [socket]);
 
+  //#endregion
+
+  //#region --active_user--
   useEffect(() => {
     socket.emit("addUser", room);
     socket.on("getUsers", (users) => {
       // console.log(users);
     });
   }, [room]);
+  //#endregion
 
+  //#region --previos chat and diffrent user--
   useEffect(() => {
     const getconversation = async () => {
       try {
@@ -69,6 +92,9 @@ function ChatComp({ socket, username, room }) {
     getMessage();
   }, [curretChat]);
 
+  //#endregion
+
+  //#region --handle--
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (currentMessage === "") {
@@ -119,6 +145,9 @@ function ChatComp({ socket, username, room }) {
     }
   };
 
+  //#endregion
+
+  //#region --ETC--
   function metadataData(data) {
     const receiverId = data.member.find((memeber) => memeber !== room);
     socket.emit("metadata", {
@@ -126,6 +155,8 @@ function ChatComp({ socket, username, room }) {
       receiverId: receiverId,
     });
   }
+  //#endregion
+
   return (
     <div>
       {conversation.map((c, index) => (
@@ -182,6 +213,7 @@ function ChatComp({ socket, username, room }) {
                 }}
               ></input>
               <button onClick={handleSendFile}>Send file</button>
+              <button onClick={sendNotification}>Notification</button>
             </form>
           </div>
         </div>
