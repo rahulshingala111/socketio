@@ -8,7 +8,6 @@ import "./Download";
 import Download from "./Download";
 
 function ChatComp({ socket, username, room }) {
-  
   const [currentMessage, setCurrentMessage] = useState("");
   const [file, setfile] = useState();
   const [conversation, setConversation] = useState([]);
@@ -23,11 +22,14 @@ function ChatComp({ socket, username, room }) {
     }
   }, []);
 
-  const sendNotification = () => {
+  const sendNotification = (e) => {
+    e.preventDefault();
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Hello!", {
         body: "This is a notification",
       });
+    } else {
+      console.log("permission not granted");
     }
   };
   //#endregion
@@ -37,6 +39,11 @@ function ChatComp({ socket, username, room }) {
     console.log("welcome");
     async function mess() {
       await socket.on("getMessage", (data) => {
+        if (data.text) {
+          
+        } else {
+          
+        }
         setMessages((prev) => [
           ...prev,
           { text: data.text, sender: data.senderId },

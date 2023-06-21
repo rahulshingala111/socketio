@@ -220,11 +220,14 @@ io.on("connection", (socket) => {
   //SEND MESSAGE
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
     console.log("text " + text);
+    console.log(senderId + " and " + receiverId);
     Conver.find({
       member: { $in: [senderId] },
       member: { $in: [receiverId] },
     }).then(async (response) => {
+      console.log(response);
       var conversationId = response[0].id;
+      console.log("conversation Id" + conversationId);
       // await Messg.insertMany({
       //   conversationId,
       //   sender: senderId,
@@ -236,7 +239,7 @@ io.on("connection", (socket) => {
       });
     });
   });
-
+ 
   //DISCONNECT
   socket.on("disconnect", () => {
     console.log("user disconnected");
@@ -258,12 +261,12 @@ io.on("connection", (socket) => {
             member: { $in: [metadata.receiverId] },
           }).then((response) => {
             var conversationId = response[0].id;
-            // Messg.insertMany({
-            //   conversationId,
-            //   sender: metadata.senderId,
-            //   text: null,
-            //   nameOFfile: fileName,
-            // });
+            Messg.insertMany({
+              conversationId,
+              sender: metadata.senderId,
+              text: null,
+              nameOFfile: fileName,
+            });
           });
           socket
             .to("room")
