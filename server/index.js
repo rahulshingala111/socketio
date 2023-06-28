@@ -94,7 +94,7 @@ app.get("/api/users/:userId", (req, res) => {
   try {
     User.findById(req.params.userId)
       .then((response) => {
-        res.status(200).json(response)
+        res.status(200).json(response);
       })
       .catch((error) => {
         res.status(404).json(error);
@@ -218,7 +218,15 @@ io.on("connection", (socket) => {
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
     io.emit("getUsers", users);
-    console.log(users);
+  });
+
+  //ROOM
+  socket.on("newroom", (data) => {
+    socket.join(data.roomName);
+  });
+  socket.on("roomemit", (data) => {
+    console.log(data);
+    socket.to(data.room).emit("roomrecive", { text: data.text, user: data.user });
   });
 
   socket.on("metadata", (data) => {

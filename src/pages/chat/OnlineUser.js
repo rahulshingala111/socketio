@@ -1,8 +1,11 @@
+/* eslint-disable */
 import axios from "axios";
 import { useState } from "react";
 import { useEffect } from "react";
+
 function OnlineUser(props) {
   const [user, setUser] = useState();
+
   useEffect(() => {
     const usernamefetch = async () => {
       await axios
@@ -16,6 +19,19 @@ function OnlineUser(props) {
     };
     usernamefetch();
   }, []);
-  return user?.username;
+
+  const newConversation = () => {
+    console.log("clicked");
+  };
+
+  return (
+    <div onClick={newConversation}>
+      <table border={1}>
+        <tr>
+          <tr>{user?.username}</tr>
+        </tr>
+      </table>
+    </div>
+  );
 }
 export default OnlineUser;

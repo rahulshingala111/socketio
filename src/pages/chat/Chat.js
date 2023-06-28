@@ -3,6 +3,7 @@ import "../chat/Chat.css";
 import "./ChatCss.css";
 import { io } from "socket.io-client";
 import ChatComp from "./ChatComp";
+import RoomComp from "./Component/RoomComp";
 import axios from "axios";
 const socket = io.connect("http://localhost:3001");
 
@@ -10,6 +11,10 @@ function Chat() {
   const [username, setUsername] = useState("");
   const [room, setRoom] = useState(null);
   const [showChat, setShowChat] = useState(false);
+
+  const [roomName, setRoomName] = useState();
+  const [roomUserName, setRoomUserName] = useState();
+  const [showRoom, setShowRoom] = useState(false);
 
   const handleJoinRoom = async (e) => {
     e.preventDefault();
@@ -27,9 +32,44 @@ function Chat() {
         console.log(error);
       });
   };
+  const handleNewRoom = (e) => {
+    e.preventDefault();
+    setShowRoom(true);
+    socket.emit("newroom", { roomName });
+  };
 
   return (
     <div className="App">
+      {!showRoom ? (
+        <div className="joinChatContainer">
+          <div>
+            <h2>Join Room</h2>
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="ex. rahul"
+              onChange={(e) => {
+                setRoomName(e.target.value);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="ex. rahul"
+              onChange={(e) => {
+                setRoomUserName(e.target.value);
+              }}
+            />
+          </div>
+          <div>
+            <button onClick={handleNewRoom}>Join Room</button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <RoomComp socket={socket} room={roomName} user={roomUserName} />
+        </div>
+      )}
       {!showChat ? (
         <div className="joinChatContainer">
           <div>

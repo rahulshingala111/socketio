@@ -1,12 +1,14 @@
 /* eslint-disable */
 import { useEffect, useState } from "react";
 import "./ChatCss.css";
+import "../chat/Chat.css";
 import ScrollToBottom from "react-scroll-to-bottom";
 import axios from "axios";
 import Conversation from "./Conversation";
 import "./Download";
 import Download from "./Download";
 import OnlineUser from "./OnlineUser";
+import { useAsyncError } from "react-router-dom";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -18,6 +20,7 @@ function ChatComp({ socket, username, room }) {
 
   const [onlineUser, setOnlineUser] = useState([]);
 
+  const [newRoom, setNewRoom] = useState();
   //#region  --notification--
   useEffect(() => {
     if ("Notification" in window) {
@@ -42,6 +45,7 @@ function ChatComp({ socket, username, room }) {
     console.log("welcome");
     async function mess() {
       await socket.on("getMessage", (data) => {
+        console.log(data);
         if (data.text) {
         } else {
         }
@@ -155,6 +159,10 @@ function ChatComp({ socket, username, room }) {
 
   //#endregion
 
+  const groupchat = () => {
+    console.log("groupchat");
+  };
+
   //#region --ETC--
   function metadataData(data) {
     const receiverId = data.member.find((memeber) => memeber !== room);
@@ -164,9 +172,10 @@ function ChatComp({ socket, username, room }) {
     });
   }
   //#endregion
-  
+
   return (
     <div>
+      <div onClick={groupchat}>Group Chat</div>
       <div>
         Online User:
         {onlineUser.map((ou, index) => (

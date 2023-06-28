@@ -24,7 +24,7 @@ function Conversation({ currentUser, conversation }) {
   return (
     <div>
       <table border={2}>
-        <row>{user?.firstname}</row>
+        <tr>{user?.firstname}</tr>
       </table>
     </div>
   );
