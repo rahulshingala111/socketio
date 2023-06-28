@@ -6,6 +6,7 @@ import axios from "axios";
 import Conversation from "./Conversation";
 import "./Download";
 import Download from "./Download";
+import OnlineUser from "./OnlineUser";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -14,6 +15,8 @@ function ChatComp({ socket, username, room }) {
 
   const [curretChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState(null);
+
+  const [onlineUser, setOnlineUser] = useState([]);
 
   //#region  --notification--
   useEffect(() => {
@@ -40,9 +43,7 @@ function ChatComp({ socket, username, room }) {
     async function mess() {
       await socket.on("getMessage", (data) => {
         if (data.text) {
-          
         } else {
-          
         }
         setMessages((prev) => [
           ...prev,
@@ -65,7 +66,7 @@ function ChatComp({ socket, username, room }) {
   useEffect(() => {
     socket.emit("addUser", room);
     socket.on("getUsers", (users) => {
-      // console.log(users);
+      setOnlineUser(users);
     });
   }, [room]);
   //#endregion
@@ -163,21 +164,31 @@ function ChatComp({ socket, username, room }) {
     });
   }
   //#endregion
-
+  
   return (
     <div>
-      {conversation.map((c, index) => (
-        <div
-          key={index}
-          onClick={() => {
-            setCurrentChat(c);
-            metadataData(c);
-          }}
-        >
-          <Conversation conversation={c} currentUser={room} key={index} />
-        </div>
-      ))}
-
+      <div>
+        Online User:
+        {onlineUser.map((ou, index) => (
+          <div key={index}>
+            <OnlineUser ou={ou} />
+          </div>
+        ))}
+      </div>
+      <div>
+        Your Chat:
+        {conversation.map((c, index) => (
+          <div
+            key={index}
+            onClick={() => {
+              setCurrentChat(c);
+              metadataData(c);
+            }}
+          >
+            <Conversation conversation={c} currentUser={room} key={index} />
+          </div>
+        ))}
+      </div>
       {curretChat ? (
         <div className="chat-window">
           <div className="chat-header">

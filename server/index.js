@@ -90,6 +90,19 @@ app.post("/login", (req, res) => {
 //#endregion
 
 app.get("/chat", (req, res) => {});
+app.get("/api/users/:userId", (req, res) => {
+  try {
+    User.findById(req.params.userId)
+      .then((response) => {
+        res.status(200).json(response)
+      })
+      .catch((error) => {
+        res.status(404).json(error);
+      });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 
 app.post("/api/conversation", async (req, res) => {
   try {
@@ -205,6 +218,7 @@ io.on("connection", (socket) => {
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
     io.emit("getUsers", users);
+    console.log(users);
   });
 
   socket.on("metadata", (data) => {
@@ -228,18 +242,18 @@ io.on("connection", (socket) => {
       console.log(response);
       var conversationId = response[0].id;
       console.log("conversation Id" + conversationId);
-      // await Messg.insertMany({
-      //   conversationId,
-      //   sender: senderId,
-      //   text: text,
-      // });
+      await Messg.insertMany({
+        conversationId,
+        sender: senderId,
+        text: text,
+      });
       socket.to("room").emit("getMessage", {
         senderId,
         text,
       });
     });
   });
- 
+
   //DISCONNECT
   socket.on("disconnect", () => {
     console.log("user disconnected");
