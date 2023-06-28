@@ -5,17 +5,17 @@ import Download from "../Download";
 function RoomComp({ socket, room, user }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [curretChat, setCurrentChat] = useState(null);
-  const [messages, setMessages] = useState();
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     console.log("welcome");
-    async function mess() {
-      await socket.on("roomrecive", (data) => {
+    function mess() {
+      socket.on("roomrecive", (data) => {
         console.log(data);
-        // setMessages((prev) => [
-        //   ...prev,
-        //   { recivedtext: data.text, sender: data.user },
-        // ]);
+        setMessages((prev) => [
+          ...prev,
+          { text: data.text, sender: data.user },
+        ]);
       });
     }
     mess();
@@ -24,7 +24,7 @@ function RoomComp({ socket, room, user }) {
   const handleSendMessage = (e) => {
     e.preventDefault();
     socket.emit("roomemit", { text: currentMessage, room: room, user: user });
-    setMessages((abc) => [...abc, { text: currentMessage, user: user }]);
+    setMessages((abc) => [...abc, { text: currentMessage, sender: room }]);
   };
 
   return (
@@ -41,7 +41,8 @@ function RoomComp({ socket, room, user }) {
                 className="message"
                 id={m.sender === room ? "other" : "you"}
               >
-                <Download text={m.text} />
+                <div className="message-content">{m.text}</div>
+                <div className="author">as</div>
               </div>
             ))}
           </ScrollToBottom>

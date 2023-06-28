@@ -48,14 +48,14 @@ function Chat() {
           <div>
             <input
               type="text"
-              placeholder="ex. rahul"
+              placeholder="room name"
               onChange={(e) => {
                 setRoomName(e.target.value);
               }}
             />
             <input
               type="text"
-              placeholder="ex. rahul"
+              placeholder="username"
               onChange={(e) => {
                 setRoomUserName(e.target.value);
               }}

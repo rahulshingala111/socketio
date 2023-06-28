@@ -8,7 +8,6 @@ import Conversation from "./Conversation";
 import "./Download";
 import Download from "./Download";
 import OnlineUser from "./OnlineUser";
-import { useAsyncError } from "react-router-dom";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
