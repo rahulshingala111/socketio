@@ -16,23 +16,15 @@ const io = new Server(server, {
   maxHttpBufferSize: 1e11,
 });
 const fs = require("fs");
+const mysql = require("mysql");
+
 //Schema
 const User = require("./schema/User");
 const Room = require("./schema/Room");
 const Conver = require("./schema/Conversation");
 const Messg = require("./schema/Message");
-//header origin
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.setHeader("Access-Control-Request-Headers", "Set-Headers");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Access-Control-Allow-Headers,myheader,X-RapidAPI-Key, Authorization, X-Requested-With,Set-Headers"
-  );
-  next();
-});
 
-// //-------- image upload
+//#region --- image upload multer
 const multer = require("multer");
 const { log } = require("console");
 const storage = multer.diskStorage({
@@ -44,14 +36,26 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage: storage });
+//#endregion
 
-// idk
+//#region --express--
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader("Access-Control-Request-Headers", "Set-Headers");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Access-Control-Allow-Headers,myheader,X-RapidAPI-Key, Authorization, X-Requested-With,Set-Headers"
+  );
+  next();
+});
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.array());
 app.use(express.static("public"));
-//mongoose
+//#endregion
+
+//#region -----MONGODB-----
 mongoose.set("strictQuery", true);
 mongoose.connect("mongodb://0.0.0.0:27017/socketio", {
   useNewUrlParser: true,
@@ -62,6 +66,23 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
   console.log("Database connected");
+});
+//#endregion
+
+//#region ----MySQL----
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+});
+
+con.connect(function (err) {
+  if (err) throw err;
+  console.log("Connected MySQL");
+  // con.query("CREATE DATABASE mydb", function (err, result) {
+  //   if (err) throw err;
+  //   console.log("Database created");
+  // });
 });
 //#endregion
 
@@ -89,6 +110,7 @@ app.post("/login", (req, res) => {
 
 //#endregion
 
+//#region -----chat-----
 app.get("/chat", (req, res) => {});
 app.get("/api/users/:userId", (req, res) => {
   try {
@@ -197,7 +219,9 @@ app.get("/download/:filename", (req, res) => {
     res.status(401).json(error);
   }
 });
+//#endregion
 
+//#region -----socketio----
 let users = [];
 const addUser = (userId, socketId) => {
   !users.some((user) => user.userId === userId) &&
@@ -226,7 +250,9 @@ io.on("connection", (socket) => {
   });
   socket.on("roomemit", (data) => {
     console.log(data);
-    socket.to(data.room).emit("roomrecive", { text: data.text, user: data.user });
+    socket
+      .to(data.room)
+      .emit("roomrecive", { text: data.text, user: data.user });
   });
 
   socket.on("metadata", (data) => {
@@ -303,6 +329,7 @@ io.on("connection", (socket) => {
     }
   });
 });
+//#endregion
 
 server.listen(3001, () => {
   console.log("listening on " + 3001);
