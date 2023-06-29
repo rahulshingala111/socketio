@@ -40,7 +40,7 @@ function Chat() {
 
   return (
     <div className="App">
-      {!showRoom ? (
+      {/* {!showRoom ? (
         <div className="joinChatContainer">
           <div>
             <h2>Join Room</h2>
@@ -69,7 +69,7 @@ function Chat() {
         <div>
           <RoomComp socket={socket} room={roomName} user={roomUserName} />
         </div>
-      )}
+      )} */}
       {!showChat ? (
         <div className="joinChatContainer">
           <div>

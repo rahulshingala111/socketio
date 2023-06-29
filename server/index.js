@@ -1,4 +1,3 @@
-//#region ============= ====================
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -56,17 +55,17 @@ app.use(express.static("public"));
 //#endregion
 
 //#region -----MONGODB-----
-mongoose.set("strictQuery", true);
-mongoose.connect("mongodb://0.0.0.0:27017/socketio", {
-  useNewUrlParser: true,
-  //useCreateIndex: true,
-  // useUnifiedTopology: true,
-});
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => {
-  console.log("Database connected");
-});
+// mongoose.set("strictQuery", true);
+// mongoose.connect("mongodb://0.0.0.0:27017/socketio", {
+//   useNewUrlParser: true,
+//   //useCreateIndex: true,
+//   // useUnifiedTopology: true,
+// });
+// const db = mongoose.connection;
+// db.on("error", console.error.bind(console, "connection error:"));
+// db.once("open", () => {
+//   console.log("Database connected");
+// });
 //#endregion
 
 //#region ----MySQL----
@@ -74,6 +73,7 @@ var con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
+  database: "mydb",
 });
 
 con.connect(function (err) {
@@ -83,6 +83,19 @@ con.connect(function (err) {
   //   if (err) throw err;
   //   console.log("Database created");
   // });
+});
+
+app.get("/dbtest", (req, res) => {
+  var sql =
+    "SELECT * FROM customers";
+  con.query(sql, function (err, result) {
+    if (err) {
+      //throw err;
+      res.status(404).json(err)
+    }
+    console.log("Table altered");
+    res.status(200).json(result);
+  });
 });
 //#endregion
 
