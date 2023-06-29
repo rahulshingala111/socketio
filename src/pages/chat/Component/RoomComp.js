@@ -1,7 +1,7 @@
 import ScrollToBottom from "react-scroll-to-bottom";
 import { useState, useEffect } from "react";
 import Download from "../Download";
-
+import "./profileicon.jpg";
 function RoomComp({ socket, room, user }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [curretChat, setCurrentChat] = useState(null);
@@ -24,7 +24,7 @@ function RoomComp({ socket, room, user }) {
   const handleSendMessage = (e) => {
     e.preventDefault();
     socket.emit("roomemit", { text: currentMessage, room: room, user: user });
-    setMessages((abc) => [...abc, { text: currentMessage, sender: room }]);
+    setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
   };
 
   return (
@@ -41,8 +41,21 @@ function RoomComp({ socket, room, user }) {
                 className="message"
                 id={m.sender === room ? "other" : "you"}
               >
-                <div className="message-content">{m.text}</div>
-                <div className="author">as</div>
+                <div>
+                  <div className="message-meta">
+                    <img
+                      src={require("./profileicon.jpg")}
+                      width={28}
+                      height={28}
+                    />
+                    {/* <p id="time">{messagecontent.time}</p> */}
+                    <p id="author">{m.sender}</p>
+                  </div>
+
+                  <div className="message-content">
+                    <p>{m.text}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </ScrollToBottom>

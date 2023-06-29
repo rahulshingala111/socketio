@@ -149,7 +149,8 @@ body {
 }
 
 .message-meta #author {
-    margin-left: 10px;
+    margin-left: 5px;
+    margin-top: 5px;
     font-weight: bold;
 }
 
