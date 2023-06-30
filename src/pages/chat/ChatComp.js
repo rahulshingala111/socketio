@@ -12,6 +12,7 @@ import OnlineUser from "./OnlineUser";
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [file, setfile] = useState();
+
   const [conversation, setConversation] = useState([]);
 
   const [curretChat, setCurrentChat] = useState(null);
@@ -19,7 +20,8 @@ function ChatComp({ socket, username, room }) {
 
   const [onlineUser, setOnlineUser] = useState([]);
 
-  const [newRoom, setNewRoom] = useState();
+  const [newconversation, setewConversation] = useState([]);
+  const [friendid, setFriendId] = useState("");
   //#region  --notification--
   useEffect(() => {
     if ("Notification" in window) {
@@ -41,13 +43,8 @@ function ChatComp({ socket, username, room }) {
 
   //#region --message recive--
   useEffect(() => {
-    console.log("welcome");
     async function mess() {
       await socket.on("getMessage", (data) => {
-        console.log(data);
-        if (data.text) {
-        } else {
-        }
         setMessages((prev) => [
           ...prev,
           { text: data.text, senderid: data.senderId },
@@ -56,7 +53,11 @@ function ChatComp({ socket, username, room }) {
       socket.on("test", (data) => {
         setMessages((prev) => [
           ...prev,
-          { text: "file - ", senderid: data.sender, nameOFfile: data.nameOFfile },
+          {
+            text: "file - ",
+            senderid: data.sender,
+            nameOFfile: data.nameOFfile,
+          },
         ]);
       });
     }
@@ -96,7 +97,6 @@ function ChatComp({ socket, username, room }) {
           "http://localhost:5000/api/messages/" + curretChat?.id
         );
         setMessages(res.data);
-        console.log(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -104,87 +104,83 @@ function ChatComp({ socket, username, room }) {
     getMessage();
   }, [curretChat]);
   //#endregion
+
   //#region --handle--
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    // if (currentMessage === "") {
-    //   return null;
-    // }
-    // const receiverId = curretChat.member.find((memeber) => memeber !== room);
-    // await socket.emit("sendMessage", {
-    //   senderId: room,
-    //   receiverId,
-    //   text: currentMessage,
-    // });
-    // setCurrentMessage("");
-    // setMessages((prev) => [...prev, { text: currentMessage, sender: room }]);
+    if (currentMessage === "") {
+      return null;
+    }
+    await socket.emit("sendMessage", {
+      senderId: room,
+      text: currentMessage,
+      conversationid: newconversation.id,
+    });
+    setCurrentMessage("");
+    setMessages((prev) => [...prev, { text: currentMessage, senderid: room }]);
   };
 
   const handleSendFile = async (e) => {
     e.preventDefault();
-    // if (file === undefined) {
-    //   return false;
-    // }
-    // const newDate = new Date();
-    // const noWDate = `${username}-${newDate.getDate()}-${
-    //   newDate.getMonth() + 1
-    // }-${newDate.getFullYear()}-${newDate.getHours()}-${newDate.getMinutes()}-${newDate.getSeconds()}`;
-    // const receiverId = curretChat.member.find((memeber) => memeber !== room);
-    // const metadata = {
-    //   name: file.name,
-    //   filetype: file.type,
-    //   sentDate: noWDate,
-    //   sender: room,
-    //   senderId: room,
-    //   receiverId,
-    // };
-    // try {
-    //   socket.emit("file", file, metadata, (response) => {
-    //     console.log(response.status);
-    //   });
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     {
-    //       text: "file - ",
-    //       sender: room,
-    //       nameOFfile: `${noWDate}-${file.name}`,
-    //     },
-    //   ]);
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    if (file === undefined) {
+      return false;
+    }
+    const newDate = new Date();
+    const noWDate = `${username}-${newDate.getDate()}-${
+      newDate.getMonth() + 1
+    }-${newDate.getFullYear()}-${newDate.getHours()}-${newDate.getMinutes()}-${newDate.getSeconds()}`;
+    const metadata = {
+      name: file.name,
+      filetype: file.type,
+      sentDate: noWDate,
+      sender: room,
+      senderId: room,
+      receiverId: friendid,
+    };
+    try {
+      socket.emit("file", file, metadata, (response) => {
+        console.log(response.status);
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "file - ",
+          sender: room,
+          nameOFfile: `${noWDate}-${file.name}`,
+        },
+      ]);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   //#endregion
-
-  const groupchat = () => {
-    console.log("groupchat");
-  };
 
   //#region --ETC--
   function metadataData(data) {
-    // let receiverId = "";
-    // if (room === conversation.member1) {
-    //   receiverId = conversation.member2;
-    // } else {
-    //   receiverId = conversation.member1;
-    // }
-    // socket.emit("metadata", {
-    //   senderId: room,
-    //   receiverId: receiverId,
-    // });
-    // console.log(receiverId + "reciverid");
+    socket.emit("metadata", {
+      senderId: room,
+      receiverId: friendid,
+      conversationid: data.id,
+    });
   }
+
+  const FriendIDNAME = (data) => {
+    if (room === data.member1) {
+      setFriendId(data.member2);
+    } else {
+      setFriendId(data.member1);
+    }
+  };
   //#endregion
-  console.log(messages);
+
   return (
     <div>
-      <div onClick={groupchat}>Group Chat</div>
       <div>
         Online User:
         {onlineUser.map((ou, index) => (
           <div key={index}>
-            <OnlineUser ou={ou} />
+            <OnlineUser ou={ou} currentUser={room} />
           </div>
         ))}
       </div>
@@ -196,6 +192,8 @@ function ChatComp({ socket, username, room }) {
             onClick={() => {
               setCurrentChat(c);
               metadataData(c);
+              FriendIDNAME(c);
+              setewConversation(c);
             }}
           >
             <Conversation conversation={c} currentUser={room} key={index} />

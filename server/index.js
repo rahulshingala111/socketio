@@ -147,7 +147,7 @@ app.get("/api/conversation/:userId", (req, res) => {
   }
 });
 
-app.get("/api/messages/:conversationId",  (req, res) => {
+app.get("/api/messages/:conversationId", (req, res) => {
   console.log(req.params.conversationId);
   try {
     var sql = `SELECT * FROM messages WHERE conversationid = '${req.params.conversationId}' ORDER BY created_at ASC`;
@@ -179,6 +179,23 @@ app.get("/download/:filename", (req, res) => {
     res.status(401).json(error);
   }
 });
+
+app.post("/api/newconversation", (req, res) => {
+  try {
+    var sql = `INSERT INTO conversation (member1,member2) VALUES ?`;
+    var values = [[req.body.currentUser, req.body.newUser]];
+    con.query(sql, [values], (err, result) => {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
 //#endregion
 
 //#region -----socketio----
@@ -209,43 +226,33 @@ io.on("connection", (socket) => {
     socket.join(data.roomName);
   });
   socket.on("roomemit", (data) => {
-    console.log(data);
     socket
       .to(data.room)
       .emit("roomrecive", { text: data.text, user: data.user });
   });
 
   socket.on("metadata", (data) => {
-    Conver.find({
-      member: { $in: [data.senderId] },
-      member: { $in: [data.receiverId] },
-    }).then((response) => {
-      var conversationId = response[0].id;
-      socket.join("room", conversationId);
-    });
+    socket.join("room", data.conversationid);
   });
 
   //SEND MESSAGE
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    console.log("text " + text);
-    console.log(senderId + " and " + receiverId);
-    Conver.find({
-      member: { $in: [senderId] },
-      member: { $in: [receiverId] },
-    }).then(async (response) => {
-      console.log(response);
-      var conversationId = response[0].id;
-      console.log("conversation Id" + conversationId);
-      await Messg.insertMany({
-        conversationId,
-        sender: senderId,
-        text: text,
+  socket.on("sendMessage", ({ senderId, text, conversationid }) => {
+    try {
+      var sql = `INSERT INTO messages (conversationid,senderID,text) VALUES ?`;
+      var values = [[conversationid, senderId, text]];
+      con.query(sql, [values], (err, result) => {
+        if (err) {
+          throw err;
+        } else {
+          socket.to("room").emit("getMessage", {
+            senderId,
+            text,
+          });
+        }
       });
-      socket.to("room").emit("getMessage", {
-        senderId,
-        text,
-      });
-    });
+    } catch (error) {
+      res.status(401).json(error);
+    }
   });
 
   //DISCONNECT
