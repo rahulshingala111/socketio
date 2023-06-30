@@ -65,8 +65,8 @@ con.connect(function (err) {
 });
 
 app.get("/dbtest", (req, res) => {
-  var sql = "INSERT INTO conversation (member1,member2) VALUES ?";
-  var values = [["krish777", "aniket456"]];
+  var sql = "INSERT INTO messages (conversationid,senderID,text) VALUES ?";
+  var values = [["15", "krish777", "ghare"]];
   con.query(sql, [values], function (err, result) {
     if (err) {
       //throw err;
@@ -131,33 +131,6 @@ app.post("/register", (req, res) => {
 
 //#region -----chat-----
 
-app.get("/chat", (req, res) => {});
-
-app.get("/api/users/:userId", (req, res) => {
-  try {
-    User.findById(req.params.userId)
-      .then((response) => {
-        res.status(200).json(response);
-      })
-      .catch((error) => {
-        res.status(404).json(error);
-      });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
-
-app.post("/api/conversation", async (req, res) => {
-  try {
-    const abc = await Conver.insertMany({
-      member: [req.body.senderId, req.body.reciverId],
-    });
-    res.status(200).json(abc);
-  } catch (error) {
-    res.status(401).json(error);
-  }
-});
-
 app.get("/api/conversation/:userId", (req, res) => {
   try {
     var sql = `SELECT * FROM conversation WHERE member1 LIKE '${req.params.userId}' OR member2 LIKE '${req.params.userId}'`;
@@ -174,54 +147,20 @@ app.get("/api/conversation/:userId", (req, res) => {
   }
 });
 
-app.post("/api/message", async (req, res) => {
+app.get("/api/messages/:conversationId",  (req, res) => {
+  console.log(req.params.conversationId);
   try {
-    const abc = await Messg.insertMany({
-      conversationId: req.body.conversationId,
-      sender: req.body.sender,
-      text: req.body.text,
+    var sql = `SELECT * FROM messages WHERE conversationid = '${req.params.conversationId}' ORDER BY created_at ASC`;
+    con.query(sql, (err, result) => {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
     });
-    res.status(200).json(abc);
-  } catch (error) {
-    res.sendStatus(401);
-  }
-});
-
-app.get("/api/message/:conversationId", async (req, res) => {
-  try {
-    const abc = await Messg.find({ conversationId: req.params.conversationId });
-    res.status(200).json(abc);
   } catch (error) {
     res.status(401).json(error);
   }
-});
-
-app.get("/api/getuser/:friendId", (req, res) => {
-  try {
-    User.findById({ _id: req.params.friendId })
-      .then((response) => {
-        res.status(200).json(response);
-      })
-      .catch((error) => {
-        res.status(401).json(error);
-      });
-  } catch (error) {
-    res.status(401).json(error);
-  }
-});
-
-app.get("/api/messages/:currentchatid", (req, res) => {
-  // try {
-  //   Messg.find({ conversationId: req.params.currentchatid })
-  //     .then((response) => {
-  //       res.status(200).json(response);
-  //     })
-  //     .catch((error) => {
-  //       res.status(401).json(error);
-  //     });
-  // } catch (error) {
-  //   console.log(error);
-  // }
 });
 
 app.get("/download/:filename", (req, res) => {
