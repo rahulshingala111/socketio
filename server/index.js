@@ -65,14 +65,13 @@ con.connect(function (err) {
 });
 
 app.get("/dbtest", (req, res) => {
-  var sql =
-    "SELECT * FROM customers";
+  var sql = "SELECT name,address FROM customers WHERE name='peter'";
   con.query(sql, function (err, result) {
     if (err) {
       //throw err;
-      res.status(404).json(err)
+      res.status(404).json(err);
     }
-    console.log("Table altered");
+    console.log("Update!!!!!!!!!!");
     res.status(200).json(result);
   });
 });
@@ -84,26 +83,55 @@ app.get("/", (req, res) => {
   res.sendStatus(200);
 });
 
-app.post("/login", (req, res) => {
+app.post("/loginn", (req, res) => {
   try {
-    User.findOne({ username: req.body.username }).then((response) => {
-      if (response?.username === req.body.username) {
-        res.status(200).json({
-          id: response.id,
-        });
+    var sql = "SELECT username FROM users WHERE username = ?";
+    var values = [[req.body.username]];
+    con.query(sql, [values], (err, result) => {
+      if (err) {
+        res.status(404).json(err);
       } else {
-        res.sendStatus(401);
+        if (result[0]?.username === req.body.username) {
+          res.status(200).json({ username: result[0].username, isfound: true });
+        } else {
+          res.status(401).json({ username: null, isfound: false });
+        }
       }
     });
   } catch (error) {
-    res.sendStatus(401);
+    res.status(404).json(err);
+  }
+});
+
+app.post("/register", (req, res) => {
+  try {
+    var sql = "INSERT INTO users(username,firstname,lastname,email) VALUES ?";
+    var values = [
+      [
+        req.body.username,
+        req.body.firstname,
+        req.body.lastname,
+        req.body.email,
+      ],
+    ];
+    con.query(sql, [values], (err, result) => {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
+  } catch (error) {
+    res.status(500).json(error);
   }
 });
 
 //#endregion
 
 //#region -----chat-----
+
 app.get("/chat", (req, res) => {});
+
 app.get("/api/users/:userId", (req, res) => {
   try {
     User.findById(req.params.userId)

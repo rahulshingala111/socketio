@@ -22,10 +22,10 @@ function Chat() {
       username,
     };
     await axios
-      .post("http://localhost:5000/login", data)
+      .post("http://localhost:5000/loginn", data)
       .then((response) => {
-        console.log(response.data.id);
-        setRoom(response.data.id);
+        console.log(response.data.username);
+        setRoom(response.data.username);
         setShowChat(true);
       })
       .catch((error) => {
