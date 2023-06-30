@@ -22,7 +22,7 @@ function Chat() {
       username,
     };
     await axios
-      .post("http://localhost:5000/loginn", data)
+      .post("http://localhost:5000/login", data)
       .then((response) => {
         console.log(response.data.username);
         setRoom(response.data.username);

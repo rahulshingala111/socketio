@@ -65,8 +65,9 @@ con.connect(function (err) {
 });
 
 app.get("/dbtest", (req, res) => {
-  var sql = "SELECT name,address FROM customers WHERE name='peter'";
-  con.query(sql, function (err, result) {
+  var sql = "INSERT INTO conversation (member1,member2) VALUES ?";
+  var values = [["krish777", "aniket456"]];
+  con.query(sql, [values], function (err, result) {
     if (err) {
       //throw err;
       res.status(404).json(err);
@@ -83,7 +84,7 @@ app.get("/", (req, res) => {
   res.sendStatus(200);
 });
 
-app.post("/loginn", (req, res) => {
+app.post("/login", (req, res) => {
   try {
     var sql = "SELECT username FROM users WHERE username = ?";
     var values = [[req.body.username]];
@@ -116,7 +117,7 @@ app.post("/register", (req, res) => {
     ];
     con.query(sql, [values], (err, result) => {
       if (err) {
-        res.status(404).json(err);
+        res.status(401).json({ err, msg: "user already exist" });
       } else {
         res.status(200).json(result);
       }
@@ -157,19 +158,19 @@ app.post("/api/conversation", async (req, res) => {
   }
 });
 
-app.get("/api/conversation/:userId", async (req, res) => {
+app.get("/api/conversation/:userId", (req, res) => {
   try {
-    await Conver.find({ member: { $in: [req.params.userId] } })
-      .then((response) => {
-        res.status(200).json(response);
-      })
-      .catch((error) => {
-        console.log("cant find");
-        res.status(401).json(error);
-      });
+    var sql = `SELECT * FROM conversation WHERE member1 LIKE '${req.params.userId}' OR member2 LIKE '${req.params.userId}'`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
   } catch (error) {
     console.log(error);
-    res.sendStatus(401);
+    res.status(404).json(error);
   }
 });
 
@@ -210,17 +211,17 @@ app.get("/api/getuser/:friendId", (req, res) => {
 });
 
 app.get("/api/messages/:currentchatid", (req, res) => {
-  try {
-    Messg.find({ conversationId: req.params.currentchatid })
-      .then((response) => {
-        res.status(200).json(response);
-      })
-      .catch((error) => {
-        res.status(401).json(error);
-      });
-  } catch (error) {
-    console.log(error);
-  }
+  // try {
+  //   Messg.find({ conversationId: req.params.currentchatid })
+  //     .then((response) => {
+  //       res.status(200).json(response);
+  //     })
+  //     .catch((error) => {
+  //       res.status(401).json(error);
+  //     });
+  // } catch (error) {
+  //   console.log(error);
+  // }
 });
 
 app.get("/download/:filename", (req, res) => {

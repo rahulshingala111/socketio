@@ -4,27 +4,20 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 function Conversation({ currentUser, conversation }) {
-  const [user, setUser] = useState(null);
+  const [friendId, setFriendId] = useState("");
 
   useEffect(() => {
-    const friendId = conversation.member.find((m) => m !== currentUser);
-    const getUser = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:5000/api/getuser/" + friendId
-        );
-        setUser(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    getUser();
-  }, [currentUser, conversation]);
+    if (currentUser === conversation.member1) {
+      setFriendId(conversation.member2);
+    } else {
+      setFriendId(conversation.member1);
+    }
+  }, []);
 
   return (
     <div>
       <table border={2}>
-        <tr>{user?.firstname}</tr>
+        <tr>{friendId}</tr>
       </table>
     </div>
   );

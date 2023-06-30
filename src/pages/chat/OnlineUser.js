@@ -28,7 +28,7 @@ function OnlineUser(props) {
     <div onClick={newConversation}>
       <table border={1}>
         <tr>
-          <tr>{user?.username}</tr>
+          <td>{user?.username}</td>
         </tr>
       </table>
     </div>
