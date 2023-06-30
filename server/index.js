@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const path = require("path");
 const app = express();
 const http = require("http");
@@ -16,12 +15,6 @@ const io = new Server(server, {
 });
 const fs = require("fs");
 const mysql = require("mysql");
-
-//Schema
-const User = require("./schema/User");
-const Room = require("./schema/Room");
-const Conver = require("./schema/Conversation");
-const Messg = require("./schema/Message");
 
 //#region --- image upload multer
 const multer = require("multer");
@@ -52,20 +45,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.array());
 app.use(express.static("public"));
-//#endregion
-
-//#region -----MONGODB-----
-// mongoose.set("strictQuery", true);
-// mongoose.connect("mongodb://0.0.0.0:27017/socketio", {
-//   useNewUrlParser: true,
-//   //useCreateIndex: true,
-//   // useUnifiedTopology: true,
-// });
-// const db = mongoose.connection;
-// db.on("error", console.error.bind(console, "connection error:"));
-// db.once("open", () => {
-//   console.log("Database connected");
-// });
 //#endregion
 
 //#region ----MySQL----
