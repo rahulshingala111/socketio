@@ -86,14 +86,14 @@ con.connect(function (err) {
 });
 
 app.get("/dbtest", (req, res) => {
-  var sql =
-    "SELECT * FROM customers";
-  con.query(sql, function (err, result) {
+  var sql = "SELECT * FROM customers";
+  con.query(sql, function (err, result, fields) {
     if (err) {
       //throw err;
-      res.status(404).json(err)
+      res.status(404).json(err);
     }
     console.log("Table altered");
+    console.log(fields);
     res.status(200).json(result);
   });
 });
