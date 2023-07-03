@@ -156,7 +156,7 @@ function ChatComp({ socket, username, room }) {
 
   //#endregion
 
-  //#region --ETC--
+  //#region --ETC---
   function metadataData(data) {
     socket.emit("metadata", {
       senderId: room,
