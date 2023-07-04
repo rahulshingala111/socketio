@@ -161,11 +161,7 @@ function ChatComp({ socket, username, room }) {
 
   //#endregion
 
-  const groupchat = () => {
-    console.log("groupchat");
-  };
-
-  //#region --ETC--
+  //#region --ETC---
   function metadataData(data) {
     let receiverId = "";
     if (room === conversation.member1) {
