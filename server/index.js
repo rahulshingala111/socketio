@@ -16,6 +16,8 @@ const io = new Server(server, {
 const fs = require("fs");
 const mysql = require("mysql");
 const { v4: uuidv4 } = require("uuid");
+// const { PeerServer } = require("peer");
+// const peerServer = PeerServer({ port: 9000, path: "/" });
 
 //#region --- image upload multer
 const multer = require("multer");
@@ -181,7 +183,8 @@ app.get("/download/:filename", (req, res) => {
 });
 //#endregion
 
-//#region
+//#region ------videocall--
+
 app.get("/videocall", (req, res) => {
   res.redirect(`/videocall/${uuidv4()}`);
 });
@@ -191,11 +194,16 @@ app.get("/videocall/:room", (req, res) => {
 
 io.on("connection", (socket) => {
   socket.on("join-room", (roomId, userId) => {
-    console.log(roomId, userId);
+    // console.log(roomId, userId);
     socket.join(roomId);
     socket.to(roomId).emit("user-connected", userId);
+
+    socket.on("disconnect", () => {
+      socket.to(roomId).emit("user-disconnect", userId);
+    });
   });
 });
+
 //#endregion
 
 //#region -----socketio-----

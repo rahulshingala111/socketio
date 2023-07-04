@@ -175,6 +175,8 @@ function ChatComp({ socket, username, room }) {
     });
     console.log(receiverId + "reciverid");
   }
+
+  const groupchat = () => {};
   //#endregion
   console.log(messages);
   return (
