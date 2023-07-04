@@ -15,6 +15,7 @@ const io = new Server(server, {
 });
 const fs = require("fs");
 const mysql = require("mysql");
+const { v4: uuidv4 } = require("uuid");
 
 //#region --- image upload multer
 const multer = require("multer");
@@ -177,6 +178,23 @@ app.get("/download/:filename", (req, res) => {
   } catch (error) {
     res.status(401).json(error);
   }
+});
+//#endregion
+
+//#region
+app.get("/videocall", (req, res) => {
+  res.redirect(`/videocall/${uuidv4()}`);
+});
+app.get("/videocall/:room", (req, res) => {
+  res.status(200).json(req.params.room);
+});
+
+io.on("connection", (socket) => {
+  socket.on("join-room", (roomId, userId) => {
+    console.log(roomId, userId);
+    socket.join(roomId);
+    socket.to(roomId).emit("user-connected", userId);
+  });
 });
 //#endregion
 

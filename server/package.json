@@ -16,6 +16,7 @@
     "nodemon": "^2.0.22",
     "path": "^0.12.7",
     "socket.io": "^4.6.1",
-    "socket.io-client": "^4.6.1"
+    "socket.io-client": "^4.6.1",
+    "uuid": "^9.0.0"
   }
 }
