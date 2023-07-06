@@ -8,15 +8,6 @@ const socket = io.connect("http://localhost:3001");
 function VideoCall(props) {
   const [roomId, setRoomId] = useState(null);
 
-  useEffect(() => {
-    const rediretctoroomid = async () => {
-      await axios.get("http://localhost:5000/videocall").then((response) => {
-        setRoomId(response.data);
-      });
-    };
-    rediretctoroomid();
-  }, []);
-
   const myPeer = new Peer(undefined, {
     host: "/",
     port: "9000",
@@ -74,7 +65,6 @@ function VideoCall(props) {
     });
     peers[userId] = call;
   };
-
   return (
     <>
       <div id="video-grid"></div>

@@ -15,13 +15,11 @@ const io = new Server(server, {
 });
 const fs = require("fs");
 const mysql = require("mysql");
-const { v4: uuidv4 } = require("uuid");
-// const { PeerServer } = require("peer");
-// const peerServer = PeerServer({ port: 9000, path: "/" });
 
 //#region --- image upload multer
 const multer = require("multer");
 const { log } = require("console");
+const { redirect } = require("react-router-dom");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/images");
@@ -165,6 +163,22 @@ app.get("/api/messages/:conversationId", (req, res) => {
   }
 });
 
+app.post("/api/newconversation", (req, res) => {
+  try {
+    var sql = `INSERT INTO conversation (member1,member2) VALUES ?`;
+    var values = [[req.body.currentUser, req.body.newUser]];
+    con.query(sql, [values], (err, result) => {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
 app.get("/download/:filename", (req, res) => {
   try {
     console.log(req.params.filename);
@@ -185,11 +199,14 @@ app.get("/download/:filename", (req, res) => {
 
 //#region ------videocall--
 
-app.get("/videocall", (req, res) => {
-  res.redirect(`/videocall/${uuidv4()}`);
-});
-app.get("/videocall/:room", (req, res) => {
-  res.status(200).json(req.params.room);
+app.post("/videocall", (req, res) => {
+  try {
+    const conversationid = req.body.conversationid.id;
+   // res.redirect("http://localhost:3000/videocall");
+  } catch (error) {
+    console.log(error);
+    res.status(404).json(error);
+  }
 });
 
 io.on("connection", (socket) => {
@@ -241,36 +258,27 @@ io.on("connection", (socket) => {
   });
 
   socket.on("metadata", (data) => {
-    Conver.find({
-      member: { $in: [data.senderId] },
-      member: { $in: [data.receiverId] },
-    }).then((response) => {
-      var conversationId = response[0].id;
-      socket.join("room", conversationId);
-    });
+    socket.join("room", data.conversationid);
   });
 
   //SEND MESSAGE
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    console.log("text " + text);
-    console.log(senderId + " and " + receiverId);
-    Conver.find({
-      member: { $in: [senderId] },
-      member: { $in: [receiverId] },
-    }).then(async (response) => {
-      console.log(response);
-      var conversationId = response[0].id;
-      console.log("conversation Id" + conversationId);
-      await Messg.insertMany({
-        conversationId,
-        sender: senderId,
-        text: text,
+  socket.on("sendMessage", ({ senderId, text, conversationid }) => {
+    try {
+      var sql = `INSERT INTO messages (conversationid,senderID,text) VALUES ?`;
+      var values = [[conversationid, senderId, text]];
+      con.query(sql, [values], (err, result) => {
+        if (err) {
+          throw err;
+        } else {
+          socket.to("room").emit("getMessage", {
+            senderId,
+            text,
+          });
+        }
       });
-      socket.to("room").emit("getMessage", {
-        senderId,
-        text,
-      });
-    });
+    } catch (error) {
+      res.status(401).json(error);
+    }
   });
 
   //DISCONNECT
