@@ -3,8 +3,11 @@ import axios from "axios";
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 function Conversation({ conversationid, currentUser, conversation }) {
   const [friendId, setFriendId] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (currentUser === conversation.member1) {
@@ -13,11 +16,16 @@ function Conversation({ conversationid, currentUser, conversation }) {
       setFriendId(conversation.member1);
     }
   }, []);
+
   const handleVideoCall = () => {
     const toVideoCall = () => {
       const toconversationid = conversationid?.id;
-      console.log(toconversationid);
-      window.location = `/videocall?conversationid=` + toconversationid;
+      navigate("/videocall", {
+        state: {
+          roomId: toconversationid,
+          currentUser,
+        },
+      });
     };
     toVideoCall();
   };
