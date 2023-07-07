@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 /server/node_modules
+/server/jitsi-meet
+/server/docker-jitsi-meet-stable-8719
 /server/tmp/files
 # testing
 /coverage

@@ -16,6 +16,8 @@ function Chat() {
   const [roomUserName, setRoomUserName] = useState();
   const [showRoom, setShowRoom] = useState(false);
 
+  const [isLogin, setIsLogin] = useState(false);
+  
   const handleJoinRoom = async (e) => {
     e.preventDefault();
     const data = {
@@ -29,7 +31,10 @@ function Chat() {
         setShowChat(true);
       })
       .catch((error) => {
-        console.log(error);
+        console.log(error.response.data.username);
+        if (error.response.data.username === null) {
+          setIsLogin(true);
+        }
       });
   };
   const handleNewRoom = (e) => {
@@ -86,6 +91,9 @@ function Chat() {
           </div>
           <div>
             <button onClick={handleJoinRoom}>Join Chat</button>
+          </div>
+          <div>
+            {isLogin ? <p style={{ color: "red" }}>INVALID Username</p> : null}
           </div>
         </div>
       ) : (

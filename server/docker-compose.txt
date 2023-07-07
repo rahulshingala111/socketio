@@ -1,0 +1,21 @@
+version: "3"
+services:
+  web:
+    image: jitsi/web:web-1.0.7378-1
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./web:/usr/share/jitsi-meet"
+    environment:
+      - ENABLE_AUTH=1
+      - ENABLE_GUESTS=1
+      - AUTH_TYPE=internal
+      - TZ=UTC
+      - JVB_BREWERY_MUC=jvbbrewery
+      - JVB_ENABLE_APIS=rest,colibri
+      - JICOFO_AUTH_USER=focus
+      - JICOFO_AUTH_PASSWORD=Rahul123
+      - JIGASI_XMPP_USER=jigasi
+      - JIGASI_XMPP_PASSWORD=Rahul123
+      - JVB_AUTH_USER=jvb
+      - JVB_AUTH_PASSWORD=Rahul123
