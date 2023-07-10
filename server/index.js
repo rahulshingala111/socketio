@@ -20,6 +20,7 @@ const mysql = require("mysql");
 const multer = require("multer");
 const { log } = require("console");
 const { redirect } = require("react-router-dom");
+const { validate } = require("uuid");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/images");
@@ -132,6 +133,23 @@ app.post("/register", (req, res) => {
 
 //#region -----chat-----
 
+app.get("/api/user/:userId", (req, res) => {
+  try {
+    var sql = "SELECT * FROM users WHERE username LIKE ?";
+    var values = [[req.params.userId]];
+    con.query(sql, values, (err, result) => {
+      if (err) {
+        res.status(404).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).json(error);
+  }
+});
+
 app.get("/api/conversation/:userId", (req, res) => {
   try {
     var sql = `SELECT * FROM conversation WHERE member1 LIKE '${req.params.userId}' OR member2 LIKE '${req.params.userId}'`;
@@ -202,7 +220,7 @@ app.get("/download/:filename", (req, res) => {
 app.post("/videocall", (req, res) => {
   try {
     const conversationid = req.body.conversationid.id;
-   // res.redirect("http://localhost:3000/videocall");
+    // res.redirect("http://localhost:3000/videocall");
   } catch (error) {
     console.log(error);
     res.status(404).json(error);

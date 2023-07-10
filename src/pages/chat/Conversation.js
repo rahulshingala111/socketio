@@ -4,9 +4,14 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
 
 function Conversation({ conversationid, currentUser, conversation }) {
-  const [friendId, setFriendId] = useState("");
+  const [friendId, setFriendId] = useState(null);
+  const [friendIdData, setFriendIdData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +21,12 @@ function Conversation({ conversationid, currentUser, conversation }) {
       setFriendId(conversation.member1);
     }
   }, []);
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/user/" + friendId).then((response) => {
+      setFriendIdData(response.data[0]);
+    });
+  }, [friendId]);
 
   const handleVideoCall = () => {
     const toVideoCall = () => {
@@ -30,13 +41,58 @@ function Conversation({ conversationid, currentUser, conversation }) {
     toVideoCall();
   };
 
+  //#region -----style-----
+
+  function stringToColor(string) {
+    let hash = 0;
+    let i;
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = "#";
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+
+    return color;
+  }
+  function stringAvatar(capitalName) {
+    const name = capitalName.toUpperCase();
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+    };
+  }
+  //#endregion
+
   return (
-    <div>
-      <table border={1}>
-        <th>{friendId}</th>
-        <th onClick={handleVideoCall}>video call</th>
-      </table>
-    </div>
+    <>
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar
+            {...stringAvatar(
+              `${friendIdData?.firstname} ${
+                friendIdData?.lastname
+                  ? friendIdData?.lastname
+                  : friendIdData?.firstname
+              }`
+            )}
+          />
+        </ListItemAvatar>
+        <ListItemText
+          primary={friendIdData?.firstname + " " + friendIdData?.lastname}
+          secondary={"@" + friendIdData?.username}
+        />
+      </ListItem>
+    </>
   );
 }
 export default Conversation;

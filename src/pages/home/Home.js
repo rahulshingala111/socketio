@@ -12,6 +12,11 @@ function Home() {
     .catch((error) => {
       console.log(error);
     });
+
+  const handlemeet = () => {
+    window.location = "https://127.0.0.1:8080/newmeet";
+  };
+
   return (
     <div>
       <Button variant="contained" href="/login">
@@ -23,6 +28,7 @@ function Home() {
       <Button variant="contained" href="/chat">
         Chat
       </Button>
+      <Button onClick={handlemeet}>to meet</Button>
     </div>
   );
 }

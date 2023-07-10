@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 import ChatComp from "./ChatComp";
 import RoomComp from "./Component/RoomComp";
 import axios from "axios";
+import { useEffect } from "react";
 const socket = io.connect("http://localhost:3001");
 
 function Chat() {
@@ -17,7 +18,9 @@ function Chat() {
   const [showRoom, setShowRoom] = useState(false);
 
   const [isLogin, setIsLogin] = useState(false);
-  
+
+  useEffect(() => {}, []);
+
   const handleJoinRoom = async (e) => {
     e.preventDefault();
     const data = {

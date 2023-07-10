@@ -8,6 +8,10 @@ import Conversation from "./Conversation";
 import "./Download";
 import Download from "./Download";
 import OnlineUser from "./OnlineUser";
+import { Grid } from "@mui/material";
+
+//design
+import List from "@mui/material/List";
 
 function ChatComp({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -178,32 +182,45 @@ function ChatComp({ socket, username, room }) {
     <div>
       <div>
         Online User:
-        {onlineUser.map((ou, index) => (
-          <div key={index}>
-            <OnlineUser ou={ou} currentUser={room} />
-          </div>
-        ))}
+        <List
+          sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
+        >
+          {onlineUser.map((ou, index) => (
+            <div key={index}>
+              <OnlineUser ou={ou} currentUser={room} />
+            </div>
+          ))}
+        </List>
       </div>
       <div>
-        Your Chat:
-        {conversation.map((c, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              setCurrentChat(c);
-              metadataData(c);
-              FriendIDNAME(c);
-              setewConversation(c);
-            }}
-          >
-            <Conversation conversationid={newconversation} conversation={c} currentUser={room} key={index} />
-          </div>
-        ))}
+        Your Chat
+        <List
+          sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
+        >
+          {conversation.map((c, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                setCurrentChat(c);
+                metadataData(c);
+                FriendIDNAME(c);
+                setewConversation(c);
+              }}
+            >
+              <Conversation
+                conversationid={newconversation}
+                conversation={c}
+                currentUser={room}
+                key={index}
+              />
+            </div>
+          ))}
+        </List>
       </div>
       {curretChat ? (
         <div className="chat-window">
           <div className="chat-header">
-            <p>Live Chat with {username}</p>
+            <p>Live Chat with {friendid}</p>
           </div>
           <div className="chat-body">
             <ScrollToBottom className="message-container">
