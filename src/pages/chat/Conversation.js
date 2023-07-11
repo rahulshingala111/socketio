@@ -91,7 +91,7 @@ function Conversation({ socket, currentUser, conversation }) {
           primary={friendIdData?.firstname + " " + friendIdData?.lastname}
           secondary={"@" + friendIdData?.username}
         />
-        <ListItemText onClick={handleVideoCall} primary="a" />
+        <ListItemText onClick={handleVideoCall} primary="VideoCall" />
       </ListItem>
     </>
   );
