@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 
-function Conversation({ conversationid, currentUser, conversation }) {
+function Conversation({ socket, currentUser, conversation }) {
   const [friendId, setFriendId] = useState(null);
   const [friendIdData, setFriendIdData] = useState(null);
   const navigate = useNavigate();
@@ -28,15 +28,15 @@ function Conversation({ conversationid, currentUser, conversation }) {
     });
   }, [friendId]);
 
-  const handleVideoCall = () => {
-    const toVideoCall = () => {
-      const toconversationid = conversationid?.id;
-      navigate("/videocall", {
-        state: {
-          roomId: toconversationid,
-          currentUser,
-        },
+  const handleVideoCall = (e) => {
+    e.preventDefault();
+    const toVideoCall = async () => {
+      await socket.emit("videocallnotification", {
+        text: "Incoming Videocall",
+        conversationid: conversation.id,
+        friendId: friendId,
       });
+      window.location = `https://127.0.0.1:8080/${conversation.id}`;
     };
     toVideoCall();
   };
@@ -91,6 +91,7 @@ function Conversation({ conversationid, currentUser, conversation }) {
           primary={friendIdData?.firstname + " " + friendIdData?.lastname}
           secondary={"@" + friendIdData?.username}
         />
+        <ListItemText onClick={handleVideoCall} primary="a" />
       </ListItem>
     </>
   );

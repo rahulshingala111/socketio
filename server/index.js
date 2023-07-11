@@ -279,6 +279,15 @@ io.on("connection", (socket) => {
     socket.join("room", data.conversationid);
   });
 
+  socket.on("videocallnotification", (data) => {
+    const senderIdObject = users.find(
+      (videcallvalue) => videcallvalue.userId === data.friendId
+    );
+    socket
+      .to(senderIdObject?.socketId)
+      .emit("recivevideocallnotification", data);
+  });
+
   //SEND MESSAGE
   socket.on("sendMessage", ({ senderId, text, conversationid }) => {
     try {
@@ -288,7 +297,10 @@ io.on("connection", (socket) => {
         if (err) {
           throw err;
         } else {
-          socket.to("room").emit("getMessage", {
+          const senderIdObject = users.find(
+            (videcallvalue) => videcallvalue.userId === senderId
+          );
+          socket.to(senderIdObject?.socketId).emit("getMessage", {
             senderId,
             text,
           });

@@ -33,12 +33,27 @@ function ChatComp({ socket, username, room }) {
     }
   }, []);
 
-  const sendNotification = (e) => {
-    e.preventDefault();
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Hello!", {
-        body: "This is a notification",
+  useEffect(() => {
+    const videoCallNotification = () => {
+      socket.on("recivevideocallnotification", (data) => {
+        console.log(data);
+        sendNotification(data.text, data.friendId, data.conversationid);
       });
+    };
+    videoCallNotification();
+  }, [socket]);
+
+  const sendNotification = (text, id, conversationid) => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const notification = new Notification(`${id}`, {
+        body: text,
+        requireInteraction: true,
+        // icon: "../images/touch/chrome-touch-icon-192x192.png",
+        vibrate: [200, 100, 200, 100, 200, 100, 200],
+      });
+      notification.onclick = () => {
+        window.location = `https://127.0.0.1:8080/${conversationid}`;
+      };
     } else {
       console.log("permission not granted");
     }
@@ -76,7 +91,7 @@ function ChatComp({ socket, username, room }) {
     socket.on("getUsers", (users) => {
       setOnlineUser(users);
     });
-  }, [room]);
+  }, []);
   //#endregion
 
   //#region --previos chat and diffrent user--
@@ -212,6 +227,7 @@ function ChatComp({ socket, username, room }) {
                 conversation={c}
                 currentUser={room}
                 key={index}
+                socket={socket}
               />
             </div>
           ))}
