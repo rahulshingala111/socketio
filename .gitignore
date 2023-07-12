@@ -5,7 +5,7 @@
 /.pnp
 .pnp.js
 /server/node_modules
-/server/jitsi-meet
+/server/jitsi-meet/node_modules
 /server/docker-jitsi-meet-stable-8719
 /server/tmp/files
 # testing
